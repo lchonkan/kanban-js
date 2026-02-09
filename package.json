@@ -1,0 +1,24 @@
+{
+    "name": "kanban-js",
+    "version": "0.1.0",
+    "description": "Simple Kanban board built with vanilla HTML, CSS, and JavaScript",
+    "private": true,
+    "scripts": {
+        "lint": "eslint assets/js/",
+        "lint:fix": "eslint assets/js/ --fix",
+        "format": "prettier --write .",
+        "format:check": "prettier --check .",
+        "validate": "npm run lint && npm run format:check",
+        "test": "echo \"No tests configured yet\" && exit 0"
+    },
+    "keywords": [
+        "kanban",
+        "vanilla-js",
+        "drag-and-drop"
+    ],
+    "license": "MIT",
+    "devDependencies": {
+        "eslint": "^8.56.0",
+        "prettier": "^3.2.0"
+    }
+}

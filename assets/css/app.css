@@ -23,7 +23,7 @@ body {
     justify-content: center;
     align-items: stretch;
     padding-left: 10px;
-    background-color: rgba(0, 0, 0, 0.87);
+    background-color: hsla(225, 25%, 10%, 0.95);
     color: white;
     flex-grow: 0;
     height: 40px;
@@ -33,12 +33,13 @@ body {
     padding: 10px;
     position: fixed;
     z-index: 100;
-    background-color: hsla(170, 5%, 15%, 0.75);
-    border-radius: 0px;
+    background-color: hsla(225, 15%, 13%, 0.95);
+    border-radius: 12px;
     width: 30%;
     top: 30vh;
     left: 35%;
     display: none;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
 .modal.visible {
@@ -63,7 +64,7 @@ body {
 }
 
 .board {
-    background-color: hsla(170, 5%, 5%, 1);
+    background-color: hsla(225, 20%, 8%, 1);
     display: flex;
     flex-direction: row;
     width: 100%;
@@ -72,7 +73,7 @@ body {
 }
 
 .tasklist {
-    color: hsla(170, 5%, 95%, 1);
+    color: hsla(220, 15%, 90%, 1);
     display: flex;
     flex-direction: column;
     width: 250px;
@@ -80,13 +81,14 @@ body {
     margin: 5px;
     padding-left: 5px;
     margin-top: 10px;
-    background-color: hsla(170, 5%, 15%, 0.75);
+    background-color: hsla(225, 15%, 13%, 0.85);
     height: fit-content;
     padding-bottom: 15px;
+    border-radius: 12px;
 }
 
 .droppable {
-    background-color: hsla(180, 4%, 28%, 0.993);
+    background-color: hsla(225, 20%, 22%, 0.95);
 }
 
 .tasklist-header {
@@ -104,28 +106,41 @@ body {
 }
 
 .add-task-btn {
-    background-color: hsla(170, 95%, 95%, 0.1);
+    background-color: hsla(225, 30%, 30%, 0.4);
     border: none;
     color: rgb(255, 255, 255);
     width: 25px;
     height: 25px;
     margin-right: 10px;
     border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.add-task-btn:hover {
+    background-color: hsla(225, 40%, 40%, 0.6);
 }
 
 .task {
     font-family: sans-serif;
-    border-width: 1px;
-    border-color: hsla(170, 35%, 85%, 0.5);
-    border-style: solid;
+    border: 1px solid hsla(220, 30%, 30%, 0.4);
     font-size: 0.8rem;
     height: min-content;
     max-width: 200px;
-    background-color: hsla(170, 5%, 15%, 0.75);
-    border-radius: 2%;
+    background-color: hsla(225, 20%, 18%, 0.9);
+    border-radius: 10px;
     padding-left: 5px;
     margin: 0px 5px 5px 10px;
     list-style: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.task:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .task,
@@ -193,4 +208,62 @@ fieldset .buttons {
     margin-right: 20px;
     display: flex;
     flex-direction: row-reverse;
+}
+
+/* Inline task creation form */
+.inline-task-form {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0 5px 5px 10px;
+    max-width: 200px;
+}
+
+.inline-task-form input {
+    font-family: sans-serif;
+    font-size: 0.8rem;
+    padding: 8px 10px;
+    border: 1px solid hsla(220, 30%, 30%, 0.4);
+    border-radius: 10px;
+    background-color: hsla(225, 20%, 18%, 0.9);
+    color: hsla(220, 15%, 90%, 1);
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.inline-task-form input:focus {
+    border-color: hsla(225, 40%, 45%, 0.8);
+}
+
+.inline-task-form-buttons {
+    display: flex;
+    gap: 4px;
+}
+
+.inline-task-form button {
+    font-family: sans-serif;
+    font-size: 0.75rem;
+    padding: 4px 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    color: white;
+    transition: background-color 0.15s ease;
+}
+
+.inline-task-form .inline-task-add {
+    background-color: hsla(225, 30%, 30%, 0.6);
+}
+
+.inline-task-form .inline-task-add:hover {
+    background-color: hsla(225, 40%, 40%, 0.8);
+}
+
+.inline-task-form .inline-task-cancel {
+    background-color: hsla(0, 0%, 30%, 0.4);
+}
+
+.inline-task-form .inline-task-cancel:hover {
+    background-color: hsla(0, 0%, 40%, 0.6);
 }
