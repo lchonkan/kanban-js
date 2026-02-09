@@ -45,14 +45,72 @@ class ThemeManager {
 }
 
 class Task {
-    constructor(taskID, parentID, taskName) {
+    constructor(taskID, parentID, taskName, description = '') {
         this.taskID = taskID;
         this.taskName = taskName;
+        this.description = description;
+        this.completed = false;
         this.parentListID = parentID;
         this.parentListName = document
             .getElementById(parentID)
             .querySelector('.tasklist-name').innerHTML;
-        //this.connectDrag();
+    }
+}
+
+/* ══════════════════════════════════════════════════
+   Task Card Modal — edit task title + description
+   ══════════════════════════════════════════════════ */
+class TaskCardModal {
+    static currentTask = null;
+    static currentEl = null;
+
+    static init() {
+        const modal = document.getElementById('task-card-modal');
+        const backdrop = modal.querySelector('.card-backdrop');
+        const closeBtn = document.getElementById('card-close');
+        const saveBtn = document.getElementById('card-save');
+
+        backdrop.addEventListener('click', TaskCardModal.close);
+        closeBtn.addEventListener('click', TaskCardModal.close);
+        saveBtn.addEventListener('click', TaskCardModal.save);
+
+        // Save on Ctrl/Cmd+Enter
+        modal.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') TaskCardModal.close();
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) TaskCardModal.save();
+        });
+    }
+
+    static open(taskObj, taskEl) {
+        TaskCardModal.currentTask = taskObj;
+        TaskCardModal.currentEl = taskEl;
+
+        document.getElementById('card-title').value = taskObj.taskName;
+        document.getElementById('card-desc').value = taskObj.description || '';
+        document.getElementById('card-list-name').textContent = taskObj.parentListName;
+
+        document.getElementById('task-card-modal').classList.add('visible');
+        document.getElementById('card-title').focus();
+    }
+
+    static save() {
+        const task = TaskCardModal.currentTask;
+        const el = TaskCardModal.currentEl;
+        if (!task || !el) return;
+
+        task.taskName = document.getElementById('card-title').value.trim() || task.taskName;
+        task.description = document.getElementById('card-desc').value;
+
+        // Update DOM title
+        el.querySelector('.task-title').textContent = task.taskName;
+
+        TaskCardModal.close();
+    }
+
+    static close() {
+        document.getElementById('task-card-modal').classList.remove('visible');
+        TaskCardModal.currentTask = null;
+        TaskCardModal.currentEl = null;
     }
 }
 
@@ -69,13 +127,15 @@ class TaskList {
             thisList.setAttribute('draggable', 'true');
             thisList.innerHTML = `
             <div class="tasklist" id="${id}">
-            <div class="tasklist-header">
-                <p class="tasklist-name">${listName}</p>
-                <button class="add-task-btn">+</button>
-            </div>
+                <div class="tasklist-header">
+                    <p class="tasklist-name">${listName}</p>
+                </div>
+                <div class="add-task-row">
+                    <input class="add-task-input" type="text" placeholder="New task…" />
+                    <button class="add-task-btn" title="Add task">+</button>
+                </div>
             </div>
             `;
-            //console.log(thisList);
             targetBoard.appendChild(thisList);
         }
         this.wrapperEl = thisList;
@@ -91,11 +151,14 @@ class TaskList {
 
         this.connectDroppable();
 
-        //console.dir(this.tasks);
-
-        //$Show Add Task Modal
+        // Wire up the persistent add-task input row
+        const addTaskInput = thisList.querySelector('.add-task-input');
         const addTaskBtn = thisList.querySelector('.add-task-btn');
-        addTaskBtn.addEventListener('click', this.addTaskBtnHandler.bind(this));
+
+        addTaskBtn.addEventListener('click', () => this.submitNewTask(addTaskInput));
+        addTaskInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') this.submitNewTask(addTaskInput);
+        });
     }
 
     connectDroppable() {
@@ -106,67 +169,60 @@ class TaskList {
         // Task drag is now managed by Board.connectTaskDrag() via event delegation
     }
 
-    addTaskBtnHandler() {
-        const tasklist = document.getElementById(this.id);
-
-        // Guard against duplicates — focus existing form if present
-        const existingForm = tasklist.querySelector('.inline-task-form');
-        if (existingForm) {
-            existingForm.querySelector('input').focus();
-            return;
-        }
-
-        // Create inline form
-        const form = document.createElement('div');
-        form.classList.add('inline-task-form');
-        form.innerHTML = `
-            <input type="text" placeholder="Task name..." />
-            <div class="inline-task-form-buttons">
-                <button class="inline-task-add">Add</button>
-                <button class="inline-task-cancel">✕</button>
-            </div>
-        `;
-        tasklist.appendChild(form);
-
-        const input = form.querySelector('input');
-        const addBtn = form.querySelector('.inline-task-add');
-        const cancelBtn = form.querySelector('.inline-task-cancel');
-
-        input.focus();
-
-        const submit = () => {
-            const name = input.value.trim();
-            if (name !== '') {
-                const newTask = new Task(Math.random().toString(), this.id, name);
-                this.addTask(newTask);
-            }
-            form.remove();
-        };
-
-        const cancel = () => {
-            form.remove();
-        };
-
-        addBtn.addEventListener('click', submit);
-        cancelBtn.addEventListener('click', cancel);
-        input.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter') {
-                submit();
-            } else if (event.key === 'Escape') {
-                cancel();
-            }
-        });
+    submitNewTask(inputEl) {
+        const name = inputEl.value.trim();
+        if (name === '') return;
+        const newTask = new Task(Math.random().toString(), this.id, name);
+        this.addTask(newTask, true);
+        inputEl.value = '';
+        inputEl.focus();
     }
 
-    addTask(task) {
+    addTask(task, animate = false) {
         this.tasks.push(task);
         const target = document.getElementById(task.parentListID);
-        const newTask = document.createElement('li');
-        newTask.setAttribute('id', task.taskID);
-        newTask.classList.add('task');
-        newTask.textContent = task.taskName;
-        newTask.setAttribute('draggable', true);
-        target.append(newTask);
+        const newTaskEl = document.createElement('li');
+        newTaskEl.setAttribute('id', task.taskID);
+        newTaskEl.classList.add('task');
+        newTaskEl.setAttribute('draggable', true);
+
+        newTaskEl.innerHTML = `
+            <div class="task-content">
+                <button class="task-check" title="Mark complete">✓</button>
+                <span class="task-title">${task.taskName}</span>
+                <button class="task-edit-btn" title="Edit task">✎</button>
+            </div>
+        `;
+
+        // Check button — toggle completed
+        newTaskEl.querySelector('.task-check').addEventListener('click', (e) => {
+            e.stopPropagation();
+            task.completed = !task.completed;
+            newTaskEl.classList.toggle('completed', task.completed);
+        });
+
+        // Edit button — open card modal
+        newTaskEl.querySelector('.task-edit-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            TaskCardModal.open(task, newTaskEl);
+        });
+
+        // Insert before the add-task-row so new tasks appear above the input
+        const addRow = target.querySelector('.add-task-row');
+        if (addRow) {
+            target.insertBefore(newTaskEl, addRow);
+        } else {
+            target.append(newTaskEl);
+        }
+
+        // Trigger pop-in animation for user-created tasks
+        if (animate) {
+            newTaskEl.classList.add('task-pop-in');
+            newTaskEl.addEventListener('animationend', () => {
+                newTaskEl.classList.remove('task-pop-in');
+            }, { once: true });
+        }
+
         this.connectDrag(task.taskID);
     }
 
@@ -249,6 +305,7 @@ class Board {
                 // Determine if cursor is on upper or lower half of the target task
                 const rect = targetTask.getBoundingClientRect();
                 const midpoint = rect.top + rect.height / 2;
+                const addRow = targetList.querySelector('.add-task-row');
 
                 if (event.clientY < midpoint) {
                     // Insert before the target task
@@ -256,18 +313,20 @@ class Board {
                         targetList.insertBefore(draggedTask, targetTask);
                     }
                 } else {
-                    // Insert after the target task
-                    if (targetTask.nextElementSibling !== draggedTask) {
-                        targetList.insertBefore(draggedTask, targetTask.nextElementSibling);
+                    // Insert after the target task, but never below the add-task row
+                    const ref = targetTask.nextElementSibling;
+                    const insertRef = (ref && ref === addRow) ? addRow : ref;
+                    if (draggedTask.nextElementSibling !== insertRef) {
+                        targetList.insertBefore(draggedTask, insertRef);
                     }
                 }
             } else if (!targetTask) {
-                // Cursor is over the list but not over any task — append to end
-                // But avoid re-appending if already the last task
+                // Cursor is over the list but not over any task — insert before add-task-row
+                const addRow = targetList.querySelector('.add-task-row');
                 const tasks = targetList.querySelectorAll('.task');
                 const lastTask = tasks[tasks.length - 1];
                 if (lastTask !== draggedTask) {
-                    targetList.appendChild(draggedTask);
+                    targetList.insertBefore(draggedTask, addRow || null);
                 }
             }
         });
@@ -306,24 +365,26 @@ class Board {
             // Update the tasks arrays in each TaskList
             const taskId = draggedTask.id;
 
-            // Remove task from its old TaskList's array
+            // Find and remove task object from its old TaskList's array
+            let movedTaskObj = null;
             for (const tl of this.tasklists) {
                 const idx = tl.tasks.findIndex((t) => t.taskID === taskId);
                 if (idx !== -1) {
-                    tl.tasks.splice(idx, 1);
+                    movedTaskObj = tl.tasks.splice(idx, 1)[0];
                     break;
                 }
             }
 
             // Add task to the new TaskList's array
             const newTaskList = this.tasklists.find((tl) => tl.id === newList.id);
-            if (newTaskList) {
-                // Find the task object and update its parent info
-                const taskObj = new Task(taskId, newList.id, draggedTask.textContent);
+            if (newTaskList && movedTaskObj) {
+                // Update parent info
+                movedTaskObj.parentListID = newList.id;
+                movedTaskObj.parentListName = newList.querySelector('.tasklist-name').innerHTML;
                 // Insert at the correct index based on DOM position
                 const taskEls = [...newList.querySelectorAll('.task')];
                 const domIdx = taskEls.findIndex((el) => el.id === taskId);
-                newTaskList.tasks.splice(domIdx, 0, taskObj);
+                newTaskList.tasks.splice(domIdx, 0, movedTaskObj);
             }
 
             draggedTask = null;
@@ -447,6 +508,7 @@ class App {
         //* Start the App and Get information from HTML
         console.info('App Started');
         ThemeManager.init();
+        TaskCardModal.init();
         const board = new Board('active');
     }
 }
