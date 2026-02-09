@@ -109,63 +109,53 @@ class TaskList {
     }
 
     addTaskBtnHandler() {
-        const addTaskModal = document.createElement('div');
-        addTaskModal.classList.add('modal');
-        addTaskModal.id = 'modal2';
+        const tasklist = document.getElementById(this.id);
 
-        //#region //! Inject HTML for MODAL
-        addTaskModal.innerHTML = `
-        <p class="modal-title">Add New Task</p>
-        <form action="">
-            <fieldset>
-                <legend>Task Information</legend>
-                <p>
-                    <label
-                        >Task name: <input type="text" name="task-name"
-                    /></label>
-                </p>
-                <p>
-                    <label
-                        >Task description:
-                        <input type="text" name="task-description"
-                    /></label>
-                </p>
+        // Guard against duplicates — focus existing form if present
+        const existingForm = tasklist.querySelector('.inline-task-form');
+        if (existingForm) {
+            existingForm.querySelector('input').focus();
+            return;
+        }
 
-                <p class="buttons">
-                    <button class="add-task-btn-${this.parentListName}">Submit</button>
-                </p>
-            </fieldset>
-        </form>
-        
+        // Create inline form
+        const form = document.createElement('div');
+        form.classList.add('inline-task-form');
+        form.innerHTML = `
+            <input type="text" placeholder="Task name..." />
+            <div class="inline-task-form-buttons">
+                <button class="inline-task-add">Add</button>
+                <button class="inline-task-cancel">✕</button>
+            </div>
         `;
-        //#endregion
+        tasklist.appendChild(form);
 
-        document.getElementById('app').appendChild(addTaskModal);
+        const input = form.querySelector('input');
+        const addBtn = form.querySelector('.inline-task-add');
+        const cancelBtn = form.querySelector('.inline-task-cancel');
 
-        const modalTaskView = document.getElementById('modal2');
-        modalTaskView.classList.add('visible');
-        const backdrop = document.getElementById('backdrop');
-        backdrop.classList.add('visible');
+        input.focus();
 
-        const submitBtn = modalTaskView.querySelector('button:last-of-type');
-        console.log(this);
-        submitBtn.addEventListener('click', (event) => {
-            event.preventDefault();
-            const newTaskName = modalTaskView.querySelector('input').value;
-
-            if (newTaskName !== '') {
-                console.log('Creating new task', this);
-                const newTask = new Task(Math.random().toString(), this.id, newTaskName);
-
+        const submit = () => {
+            const name = input.value.trim();
+            if (name !== '') {
+                const newTask = new Task(Math.random().toString(), this.id, name);
                 this.addTask(newTask);
+            }
+            form.remove();
+        };
 
-                console.log('form Submitted Sucessfully');
+        const cancel = () => {
+            form.remove();
+        };
 
-                backdrop.classList.remove('visible');
-
-                document.getElementById('app').removeChild(addTaskModal);
-            } else {
-                alert('Error: Nombre de la tarea no puede estar en blanco');
+        addBtn.addEventListener('click', submit);
+        cancelBtn.addEventListener('click', cancel);
+        input.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                submit();
+            } else if (event.key === 'Escape') {
+                cancel();
             }
         });
     }
