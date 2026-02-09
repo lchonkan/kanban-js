@@ -57,9 +57,16 @@ git merge --no-ff develop
 git push origin main
 ```
 
-Pushing to `main` triggers the GitHub Pages deployment.
+Pushing to `main` triggers the Vite build and GitHub Pages deployment.
 
 ## Local Development
+
+### Prerequisites
+
+- Node.js 18+ and npm
+- A Supabase project (see [README > Supabase Setup](README.md#2-supabase-setup))
+
+### Setup
 
 ```bash
 # Clone and install
@@ -67,19 +74,43 @@ git clone https://github.com/<your-username>/kanban-js.git
 cd kanban-js
 npm install
 
-# Open in browser (no build step needed)
-open index.html
+# Configure environment
+cp .env.example .env
+# Edit .env with your Supabase URL and anon key
 
-# Linting and formatting
-npm run lint            # Check for lint errors
-npm run lint:fix        # Auto-fix lint errors
-npm run format          # Format all files
-npm run format:check    # Verify formatting
-npm run validate        # Run both lint + format check
+# Start dev server
+npm run dev
+```
+
+### Available Scripts
+
+```bash
+npm run dev           # Start Vite dev server with HMR
+npm run build         # Production build to dist/
+npm run preview       # Preview the production build
+npm run lint          # Check for lint errors
+npm run lint:fix      # Auto-fix lint errors
+npm run format        # Format all files
+npm run format:check  # Verify formatting
+npm run validate      # Run both lint + format check
 ```
 
 ## Code Style
 
 - **Linting:** ESLint (config in `.eslintrc.json`)
 - **Formatting:** Prettier (config in `.prettierrc`)
+- **Modules:** ES modules (`import`/`export`) -- `sourceType: "module"` in ESLint
 - Run `npm run validate` before merging to ensure code passes all checks.
+
+## Project Structure
+
+```
+src/
+├── app.js          Main application (classes, auth routing, UI)
+├── config.js       Supabase client initialization
+├── auth.js         Authentication helper functions
+├── db.js           Data layer (all Supabase CRUD operations)
+└── toast.js        Toast notification system
+```
+
+All source code lives in `src/`. Styles are in `assets/css/app.css`. The Supabase migration SQL is in `supabase/migration.sql`.

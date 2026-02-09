@@ -1,11 +1,15 @@
 {
     "name": "kanban-js",
-    "version": "0.1.0",
-    "description": "Simple Kanban board built with vanilla HTML, CSS, and JavaScript",
+    "version": "0.2.0",
+    "description": "Kanban board with Supabase auth and persistence, built with vanilla JS",
     "private": true,
+    "type": "module",
     "scripts": {
-        "lint": "eslint assets/js/",
-        "lint:fix": "eslint assets/js/ --fix",
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview",
+        "lint": "eslint src/",
+        "lint:fix": "eslint src/ --fix",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
         "validate": "npm run lint && npm run format:check",
@@ -14,11 +18,16 @@
     "keywords": [
         "kanban",
         "vanilla-js",
-        "drag-and-drop"
+        "drag-and-drop",
+        "supabase"
     ],
     "license": "MIT",
     "devDependencies": {
         "eslint": "^8.56.0",
-        "prettier": "^3.2.0"
+        "prettier": "^3.2.0",
+        "vite": "^7.3.1"
+    },
+    "dependencies": {
+        "@supabase/supabase-js": "^2.95.3"
     }
 }
