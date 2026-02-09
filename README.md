@@ -295,7 +295,7 @@ No tests exist yet. The planned approach:
 ### Git Flow Branching
 
 ```
-master  ← production-ready, deploys to GitHub Pages
+main  ← production-ready, deploys to GitHub Pages
   │
 develop ← integration branch, receives feature PRs
   │
@@ -307,12 +307,12 @@ feature/* ← individual feature/fix branches (branch from develop)
 1. Create `feature/*` branch from `develop`
 2. Open PR to `develop` -- CI runs lint + format checks
 3. Merge to `develop` after review
-4. When ready to release, merge `develop` → `master`
-5. `master` push triggers GitHub Pages deploy
+4. When ready to release, merge `develop` → `main`
+5. `main` push triggers GitHub Pages deploy
 
 ### CI Pipeline (`.github/workflows/ci.yml`)
 
-Triggers on push/PR to `develop` and `master`:
+Triggers on push/PR to `develop` and `main`:
 
 1. Checkout code
 2. Setup Node.js 20
@@ -322,7 +322,7 @@ Triggers on push/PR to `develop` and `master`:
 
 ### Deploy Pipeline (`.github/workflows/deploy.yml`)
 
-Triggers on push to `master`:
+Triggers on push to `main`:
 
 1. Checkout code
 2. Upload repo as GitHub Pages artifact
