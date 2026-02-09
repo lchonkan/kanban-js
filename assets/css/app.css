@@ -94,6 +94,16 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 10px;
+    cursor: grab;
+}
+
+.list-dragging {
+    opacity: 0.5;
+}
+
+.list-drop-target {
+    border: 2px dashed hsla(225, 40%, 50%, 0.6);
+    border-radius: 12px;
 }
 
 .tasklist-name {
