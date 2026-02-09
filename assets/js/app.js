@@ -155,11 +155,7 @@ class TaskList {
 
             if (newTaskName !== '') {
                 console.log('Creating new task', this);
-                const newTask = new Task(
-                    Math.random().toString(),
-                    this.id,
-                    newTaskName
-                );
+                const newTask = new Task(Math.random().toString(), this.id, newTaskName);
 
                 this.addTask(newTask);
 
