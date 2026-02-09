@@ -54,61 +54,12 @@ class TaskList {
         addTaskBtn.addEventListener('click', this.addTaskBtnHandler.bind(this));
     }
 
-    connectDroppable(id) {
-        const targetHandle = document.getElementById(this.id);
-        targetHandle.addEventListener('dragenter', (event) => {
-            if (event.dataTransfer.types[0] === 'text/plain') {
-                event.preventDefault();
-            }
-        });
-
-        targetHandle.addEventListener('dragover', (event) => {
-            if (event.dataTransfer.types[0] === 'text/plain') {
-                targetHandle.classList.add('droppable');
-                event.preventDefault();
-            }
-        });
-
-        targetHandle.addEventListener('dragleave', (event) => {
-            if (event.relatedTarget !== targetHandle) {
-                targetHandle.classList.remove('droppable');
-            }
-        });
-
-        targetHandle.addEventListener('drop', (event) => {
-            event.stopPropagation();
-            const tid = event.dataTransfer.getData('text/plain');
-            if (this.tasks.find((t) => t.taskID === tid)) {
-                console.log('task is already in this list');
-            }
-
-            console.log(event);
-            const draggedTask = document.getElementById(tid);
-            const parentTask = draggedTask.parentElement;
-            const parentOfTarget = event.path[2];
-
-            const targetList = parentOfTarget.querySelector('.tasklist');
-            targetList.appendChild(draggedTask);
-            console.log(targetList);
-
-            console.log('The dragged task:', draggedTask);
-            console.log('The parent for the dragged task:', parentTask);
-            console.log('The target list for this task', parentOfTarget);
-            console.log(this.tasks);
-        });
+    connectDroppable() {
+        // Task drop handling is now managed by Board.connectTaskDrag()
     }
 
     connectDrag(taskId) {
-        const tt = document.getElementById(taskId);
-        tt.addEventListener('dragstart', function (event) {
-            event.dataTransfer.setData('text/plain', this.id);
-            event.dataTransfer.setData('text/plain', this.id);
-            event.dataTransfer.effectAllowed = 'move';
-            console.log('event target', event.target.id);
-            console.log('dragging...', this.id);
-        });
-        //console.log(tt);
-        //console.log('connectDragCalled');
+        // Task drag is now managed by Board.connectTaskDrag() via event delegation
     }
 
     addTaskBtnHandler() {
@@ -207,6 +158,134 @@ class Board {
         console.log('Listas en el tablero actual:', this.tasklists);
 
         this.connectListDrag();
+        this.connectTaskDrag();
+    }
+
+    connectTaskDrag() {
+        const board = document.getElementById('board');
+        let draggedTask = null;
+        let originalList = null;
+        let originalNextSibling = null;
+
+        // Use event delegation on the board for all task drag events
+        board.addEventListener('dragstart', (event) => {
+            const taskEl = event.target.closest('.task');
+            if (!taskEl) return;
+
+            // Set task-specific data type so list drag doesn't interfere
+            event.dataTransfer.setData('application/x-task', taskEl.id);
+            event.dataTransfer.effectAllowed = 'move';
+
+            draggedTask = taskEl;
+            originalList = taskEl.closest('.tasklist');
+            originalNextSibling = taskEl.nextElementSibling;
+
+            requestAnimationFrame(() => {
+                taskEl.classList.add('task-dragging');
+                taskEl.classList.add('task-preview');
+            });
+        });
+
+        board.addEventListener('dragover', (event) => {
+            if (!draggedTask) return;
+            // Don't handle if this is a list drag
+            if (event.dataTransfer.types.includes('application/x-list')) return;
+            if (!event.dataTransfer.types.includes('application/x-task')) return;
+
+            event.preventDefault();
+
+            // Find the tasklist the cursor is over
+            const targetList = event.target.closest('.tasklist');
+            if (!targetList) return;
+
+            // Find the specific task element the cursor is over
+            const targetTask = event.target.closest('.task');
+
+            if (targetTask && targetTask !== draggedTask) {
+                // Determine if cursor is on upper or lower half of the target task
+                const rect = targetTask.getBoundingClientRect();
+                const midpoint = rect.top + rect.height / 2;
+
+                if (event.clientY < midpoint) {
+                    // Insert before the target task
+                    if (draggedTask.nextElementSibling !== targetTask) {
+                        targetList.insertBefore(draggedTask, targetTask);
+                    }
+                } else {
+                    // Insert after the target task
+                    if (targetTask.nextElementSibling !== draggedTask) {
+                        targetList.insertBefore(draggedTask, targetTask.nextElementSibling);
+                    }
+                }
+            } else if (!targetTask) {
+                // Cursor is over the list but not over any task — append to end
+                // But avoid re-appending if already the last task
+                const tasks = targetList.querySelectorAll('.task');
+                const lastTask = tasks[tasks.length - 1];
+                if (lastTask !== draggedTask) {
+                    targetList.appendChild(draggedTask);
+                }
+            }
+        });
+
+        board.addEventListener('dragend', (event) => {
+            if (!draggedTask) return;
+
+            // If drop didn't happen (cancelled), restore original position
+            if (event.dataTransfer.dropEffect === 'none') {
+                if (originalNextSibling) {
+                    originalList.insertBefore(draggedTask, originalNextSibling);
+                } else {
+                    originalList.appendChild(draggedTask);
+                }
+            }
+
+            draggedTask.classList.remove('task-dragging');
+            draggedTask.classList.remove('task-preview');
+            draggedTask = null;
+            originalList = null;
+            originalNextSibling = null;
+        });
+
+        board.addEventListener('drop', (event) => {
+            if (!draggedTask) return;
+            if (!event.dataTransfer.types.includes('application/x-task')) return;
+            event.preventDefault();
+            event.stopPropagation();
+
+            // Finalize: remove preview styling
+            draggedTask.classList.remove('task-dragging');
+            draggedTask.classList.remove('task-preview');
+
+            const newList = draggedTask.closest('.tasklist');
+
+            // Update the tasks arrays in each TaskList
+            const taskId = draggedTask.id;
+
+            // Remove task from its old TaskList's array
+            for (const tl of this.tasklists) {
+                const idx = tl.tasks.findIndex((t) => t.taskID === taskId);
+                if (idx !== -1) {
+                    tl.tasks.splice(idx, 1);
+                    break;
+                }
+            }
+
+            // Add task to the new TaskList's array
+            const newTaskList = this.tasklists.find((tl) => tl.id === newList.id);
+            if (newTaskList) {
+                // Find the task object and update its parent info
+                const taskObj = new Task(taskId, newList.id, draggedTask.textContent);
+                // Insert at the correct index based on DOM position
+                const taskEls = [...newList.querySelectorAll('.task')];
+                const domIdx = taskEls.findIndex((el) => el.id === taskId);
+                newTaskList.tasks.splice(domIdx, 0, taskObj);
+            }
+
+            draggedTask = null;
+            originalList = null;
+            originalNextSibling = null;
+        });
     }
 
     connectListDrag() {

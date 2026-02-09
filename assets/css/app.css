@@ -116,6 +116,32 @@ body {
     100% { opacity: 0.25; }
 }
 
+/* Task drag-and-drop styles */
+.task-dragging {
+    opacity: 0.4;
+}
+
+.task-preview {
+    animation: task-preview-pulse 1.2s ease-in-out infinite;
+    outline: 2px solid hsla(200, 60%, 50%, 0.7);
+    outline-offset: 1px;
+    background-color: hsla(200, 25%, 22%, 0.9) !important;
+}
+
+@keyframes task-preview-pulse {
+    0%   { opacity: 0.3; }
+    50%  { opacity: 0.75; }
+    100% { opacity: 0.3; }
+}
+
+/* Smooth transition for tasks shifting position */
+.tasklist .task {
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        margin 0.15s ease;
+}
+
 .tasklist-name {
     color: aliceblue;
     font-family: 'Share Tech Mono', monospace;
