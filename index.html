@@ -59,6 +59,27 @@
             </div>
         </div>
 
+        <!-- Task Card Modal -->
+        <div id="task-card-modal">
+            <div class="card-backdrop"></div>
+            <div class="task-card">
+                <div class="task-card-header">
+                    <input class="card-title-input" id="card-title" type="text" />
+                    <button class="task-card-close" id="card-close" title="Close">✕</button>
+                </div>
+                <div class="task-card-meta">
+                    in <strong id="card-list-name"></strong>
+                </div>
+                <div class="task-card-body">
+                    <label for="card-desc">Description</label>
+                    <textarea id="card-desc" placeholder="Add a more detailed description…"></textarea>
+                </div>
+                <div class="task-card-footer">
+                    <button class="card-save-btn" id="card-save">Save</button>
+                </div>
+            </div>
+        </div>
+
         <section id="app"></section>
     </body>
 </html>

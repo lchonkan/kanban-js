@@ -2,7 +2,7 @@
 
 A vanilla HTML, CSS, and JavaScript kanban board. Built as a learning project to practice ES6 classes, DOM manipulation, drag-and-drop events, and event-driven architecture -- no frameworks, no build tools, no backend.
 
-> **Status:** Early prototype (v0.1.0). Core drag-and-drop works; data persistence and polish are on the roadmap.
+> **Status:** Early prototype (v0.2.0). Core drag-and-drop, color themes, task editing, and mark-complete work; data persistence is on the roadmap.
 
 ---
 
@@ -30,50 +30,63 @@ A vanilla HTML, CSS, and JavaScript kanban board. Built as a learning project to
 
 ```
 App (static entry point)
+ ├── ThemeManager (static)   — color theme switching & localStorage persistence
+ ├── TaskCardModal (static)  — edit task title & description
  └── Board
       └── TaskList[]  (one per column: Pendientes, En Proceso, Finalizadas)
            └── Task[]  (individual task items)
 ```
 
-| Class      | Responsibility                                                                                               |
-| ---------- | ------------------------------------------------------------------------------------------------------------ |
-| `App`      | Static `init()` entry point -- creates the Board                                                             |
-| `Board`    | Renders the `<section id="board">` container; creates default TaskLists                                      |
-| `TaskList` | Renders a column, manages its `tasks[]` array, handles drag-and-drop zone events, opens the "Add Task" modal |
-| `Task`     | Data object holding `taskID`, `taskName`, `parentListID`, `parentListName`                                   |
+| Class            | Responsibility                                                                                                        |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `App`            | Static `init()` entry point — creates the Board, initializes ThemeManager and TaskCardModal                           |
+| `ThemeManager`   | Applies color themes (`dark`, `light`, `awesome`) via `data-theme` attribute; persists selection in `localStorage`     |
+| `TaskCardModal`  | Singleton modal for editing a task's title and description; opened from the edit button on each task                   |
+| `Board`          | Renders the `<section id="board">` container; creates default TaskLists; manages drag-and-drop for tasks and lists    |
+| `TaskList`       | Renders a column, manages its `tasks[]` array, provides persistent inline input for adding tasks                      |
+| `Task`           | Data object holding `taskID`, `taskName`, `description`, `completed`, `parentListID`, `parentListName`                |
 
 ### Data Flow
 
 ```
 User Action → DOM Event → Class Method → DOM Mutation
-                                       ↘ Internal Array Update (partial*)
+                                       ↘ Internal Array Update
 ```
 
-> \*Currently the internal `tasks[]` arrays are only updated on `addTask()` / `removeTask()`. Drag-and-drop moves the DOM element but does not update the source/target list arrays -- this is a known bug (see [Edge Cases](#11-edge-cases-and-error-handling)).
+Drag-and-drop now preserves task objects (with description and completed state) when moving between lists.
 
 ### DOM Structure
 
 ```
 body
- ├── #backdrop               (modal overlay)
- ├── #navigation > .nav-bar  (top bar)
+ ├── #backdrop                 (modal overlay)
+ ├── #navigation > .nav-bar    (top bar with title + settings gear)
+ ├── #settings-page            (full-screen theme settings overlay)
+ ├── #task-card-modal          (task edit card with backdrop)
+ │    └── .task-card            (title input, list label, description textarea, save)
  └── #app
       └── #board.board
-           ├── div > .tasklist#list1  (Pendientes)
-           │    ├── .tasklist-header
-           │    └── li.task (draggable)
-           ├── div > .tasklist#list2  (En Proceso)
-           └── div > .tasklist#list3  (Finalizadas)
+           ├── .tasklist-wrapper (draggable)
+           │    └── .tasklist#list1 (Pendientes)
+           │         ├── .tasklist-header
+           │         ├── li.task (draggable)
+           │         │    └── .task-content
+           │         │         ├── .task-check  (✓ toggle)
+           │         │         ├── .task-title
+           │         │         └── .task-edit-btn (✎)
+           │         └── .add-task-row (input + button)
+           ├── .tasklist-wrapper > .tasklist#list2 (En Proceso)
+           └── .tasklist-wrapper > .tasklist#list3 (Finalizadas)
 ```
 
 ### File Map
 
 ```
 kanban-js/
-├── index.html              Single-page shell
+├── index.html              Single-page shell (nav, settings page, task card modal)
 ├── assets/
-│   ├── css/app.css         All styles (197 lines)
-│   └── js/app.js           All logic  (235 lines)
+│   ├── css/app.css         All styles inc. 3 color themes via CSS custom properties
+│   └── js/app.js           All logic (ThemeManager, TaskCardModal, Board, TaskList, Task)
 ├── package.json            npm scripts + dev tooling
 ├── .eslintrc.json          Linting config
 ├── .prettierrc             Formatting config
@@ -218,7 +231,7 @@ There is no data synchronization. The board is initialized from hardcoded defaul
 | -------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `TaskList` constructor (line 24) | **Medium** | Uses template literal in `innerHTML` -- `listName` comes from the hardcoded `DEFAULT_LISTS` array, so currently safe, but would be vulnerable if list names become user-editable |
 | `addTaskBtnHandler` (line 117)   | **Low**    | Modal HTML is a static template; user input is read via `.value` and set via `textContent` (safe)                                                                                |
-| `Task` constructor (line 10)     | **Medium** | Reads `innerHTML` of `.tasklist-name` to set `parentListName`, then this value is used in a class name (line 135) -- could be exploited if list names are user-controlled        |
+| `Task` constructor               | **Low**    | Reads `innerHTML` of `.tasklist-name` to set `parentListName` — currently only used for display in the card modal                                                                |
 
 ### Recommendations
 
@@ -237,9 +250,9 @@ There is no data synchronization. The board is initialized from hardcoded defaul
 
 | Metric             | Value                                    |
 | ------------------ | ---------------------------------------- |
-| Total payload      | ~5 KB (HTML + CSS + JS, uncompressed)    |
+| Total payload      | ~12 KB (HTML + CSS + JS, uncompressed)   |
 | External resources | 3 Google Fonts requests                  |
-| JavaScript         | Single 235-line file, no bundling needed |
+| JavaScript         | Single ~500-line file, no bundling needed |
 
 ### Targets
 
@@ -355,12 +368,8 @@ npm run validate      # Run both lint + format check
 
 | Issue                   | Location                        | Description                                                                                          |
 | ----------------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Same-list drag          | `connectDroppable`              | Dragging a task within the same list appends it to the end; no "no-op" guard                         |
-| Data model out of sync  | `connectDroppable` drop handler | DOM element moves but `tasks[]` arrays are not updated -- source list still contains the task object |
-| `event.path` deprecated | `app.js:85`                     | `event.path` is non-standard and removed in modern browsers; should use `event.composedPath()`       |
-| Multiple modals         | `addTaskBtnHandler`             | Clicking "+" rapidly can open multiple modals with the same `id="modal2"`                            |
-| Backdrop not dismissed  | `addTaskBtnHandler`             | Clicking the backdrop does not close the modal (no event listener on `#backdrop`)                    |
-| `Math.random()` IDs     | `addTaskBtnHandler`             | Task IDs generated with `Math.random().toString()` risk collisions and produce non-semantic IDs      |
+| `Math.random()` IDs     | `submitNewTask`                | Task IDs generated with `Math.random().toString()` risk collisions and produce non-semantic IDs      |
+| `innerHTML` in template | `TaskList` constructor          | Uses template literal in `innerHTML` — `listName` comes from hardcoded defaults, but would be vulnerable if user-editable |
 
 ### Error Handling (Current)
 
@@ -370,23 +379,20 @@ There is no try/catch or error boundary. The only validation is a non-empty chec
 
 ## 12. Future Considerations
 
-### Short-term (v0.2)
+### Short-term (v0.3)
 
-- [ ] Fix drag-and-drop data model sync (update `tasks[]` on drop)
-- [ ] Replace `event.path` with `event.composedPath()`
-- [ ] Add localStorage persistence
-- [ ] Dismiss modal on backdrop click
+- [ ] Add localStorage persistence for board state
 - [ ] Replace `Math.random()` IDs with `crypto.randomUUID()`
+- [ ] Task deletion (from card modal or inline)
 - [ ] Clean up `console.log` statements
+- [ ] Replace `innerHTML` with `textContent` / DOM APIs where possible
 
-### Medium-term (v0.3)
+### Medium-term (v0.4)
 
-- [ ] Task editing (click to open detail view)
-- [ ] Task deletion
-- [ ] Custom list creation / renaming
-- [ ] Drag-and-drop reordering within a list
+- [ ] Custom list creation / renaming / deletion
 - [ ] Responsive design for mobile
 - [ ] Unit and integration tests (Vitest)
+- [ ] Keyboard accessibility for drag-and-drop
 
 ### Long-term (v1.0)
 
