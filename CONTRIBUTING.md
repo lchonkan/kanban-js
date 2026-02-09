@@ -5,7 +5,7 @@
 This project uses a simplified Git Flow branching model:
 
 ```
-master          production-ready, deploys to GitHub Pages
+main          production-ready, deploys to GitHub Pages
   |
 develop         integration branch, receives feature merges
   |
@@ -16,7 +16,7 @@ feature/*       individual feature or fix branches
 
 | Branch       | Purpose                                        |
 |--------------|-------------------------------------------------|
-| `master`     | Stable, production-ready code. Deploys via CI.  |
+| `main`     | Stable, production-ready code. Deploys via CI.  |
 | `develop`    | Integration branch. All features merge here first. |
 | `feature/*`  | Short-lived branches for individual features or fixes. |
 
@@ -51,13 +51,13 @@ The `--no-ff` flag preserves the feature branch history in the merge commit.
 When `develop` is stable and ready for release:
 
 ```bash
-git checkout master
-git pull origin master
+git checkout main
+git pull origin main
 git merge --no-ff develop
-git push origin master
+git push origin main
 ```
 
-Pushing to `master` triggers the GitHub Pages deployment.
+Pushing to `main` triggers the GitHub Pages deployment.
 
 ## Local Development
 
