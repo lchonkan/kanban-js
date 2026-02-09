@@ -1,5 +1,146 @@
 @charset "utf-8";
 
+/* ══════════════════════════════════════════════════
+   THEME DEFINITIONS — Dark (default), Light, Awesome
+   ══════════════════════════════════════════════════ */
+
+/* Dark Theme (default) */
+[data-theme='dark'],
+:root {
+    --nav-bg: hsla(225, 25%, 10%, 0.95);
+    --nav-text: #ffffff;
+    --board-bg: hsla(225, 20%, 8%, 1);
+    --list-bg: hsla(225, 15%, 13%, 0.85);
+    --list-text: hsla(220, 15%, 90%, 1);
+    --list-name-color: aliceblue;
+    --list-droppable-bg: hsla(225, 20%, 22%, 0.95);
+    --task-bg: hsla(225, 20%, 18%, 0.9);
+    --task-border: hsla(220, 30%, 30%, 0.4);
+    --task-shadow: rgba(0, 0, 0, 0.3);
+    --task-hover-shadow: rgba(0, 0, 0, 0.4);
+    --task-preview-outline: hsla(200, 60%, 50%, 0.7);
+    --task-preview-bg: hsla(200, 25%, 22%, 0.9);
+    --list-preview-outline: hsla(225, 60%, 55%, 0.7);
+    --btn-bg: hsla(225, 30%, 30%, 0.4);
+    --btn-hover-bg: hsla(225, 40%, 40%, 0.6);
+    --btn-text: #ffffff;
+    --modal-bg: hsla(225, 15%, 13%, 0.95);
+    --modal-shadow: rgba(0, 0, 0, 0.5);
+    --modal-title-color: rgb(219, 219, 219);
+    --backdrop-bg: rgba(0, 0, 0, 0.75);
+    --form-field-text: white;
+    --form-legend-color: aliceblue;
+    --inline-input-bg: hsla(225, 20%, 18%, 0.9);
+    --inline-input-border: hsla(220, 30%, 30%, 0.4);
+    --inline-input-focus-border: hsla(225, 40%, 45%, 0.8);
+    --inline-input-text: hsla(220, 15%, 90%, 1);
+    --inline-add-bg: hsla(225, 30%, 30%, 0.6);
+    --inline-add-hover-bg: hsla(225, 40%, 40%, 0.8);
+    --inline-cancel-bg: hsla(0, 0%, 30%, 0.4);
+    --inline-cancel-hover-bg: hsla(0, 0%, 40%, 0.6);
+    --inline-btn-text: white;
+    --settings-bg: hsla(225, 15%, 11%, 0.98);
+    --settings-card-bg: hsla(225, 15%, 16%, 0.9);
+    --settings-text: hsla(220, 15%, 85%, 1);
+    --settings-heading: aliceblue;
+    --settings-option-bg: hsla(225, 20%, 20%, 0.8);
+    --settings-option-hover-bg: hsla(225, 25%, 28%, 0.9);
+    --settings-option-active-border: hsla(225, 60%, 55%, 0.9);
+    --settings-option-border: hsla(220, 20%, 30%, 0.5);
+}
+
+/* Light Theme */
+[data-theme='light'] {
+    --nav-bg: hsla(220, 20%, 96%, 0.98);
+    --nav-text: hsla(225, 25%, 15%, 1);
+    --board-bg: hsla(220, 20%, 93%, 1);
+    --list-bg: hsla(0, 0%, 100%, 0.92);
+    --list-text: hsla(225, 20%, 20%, 1);
+    --list-name-color: hsla(225, 25%, 15%, 1);
+    --list-droppable-bg: hsla(220, 30%, 88%, 0.95);
+    --task-bg: hsla(0, 0%, 100%, 0.95);
+    --task-border: hsla(220, 15%, 80%, 0.6);
+    --task-shadow: rgba(0, 0, 0, 0.08);
+    --task-hover-shadow: rgba(0, 0, 0, 0.14);
+    --task-preview-outline: hsla(210, 70%, 55%, 0.7);
+    --task-preview-bg: hsla(210, 40%, 90%, 0.9);
+    --list-preview-outline: hsla(225, 60%, 55%, 0.7);
+    --btn-bg: hsla(220, 30%, 80%, 0.5);
+    --btn-hover-bg: hsla(220, 35%, 70%, 0.6);
+    --btn-text: hsla(225, 25%, 20%, 1);
+    --modal-bg: hsla(0, 0%, 100%, 0.97);
+    --modal-shadow: rgba(0, 0, 0, 0.15);
+    --modal-title-color: hsla(225, 20%, 25%, 1);
+    --backdrop-bg: rgba(0, 0, 0, 0.35);
+    --form-field-text: hsla(225, 20%, 20%, 1);
+    --form-legend-color: hsla(225, 25%, 15%, 1);
+    --inline-input-bg: hsla(0, 0%, 100%, 0.95);
+    --inline-input-border: hsla(220, 15%, 80%, 0.6);
+    --inline-input-focus-border: hsla(220, 50%, 55%, 0.7);
+    --inline-input-text: hsla(225, 20%, 20%, 1);
+    --inline-add-bg: hsla(220, 50%, 55%, 0.7);
+    --inline-add-hover-bg: hsla(220, 55%, 45%, 0.85);
+    --inline-cancel-bg: hsla(0, 0%, 70%, 0.4);
+    --inline-cancel-hover-bg: hsla(0, 0%, 55%, 0.5);
+    --inline-btn-text: white;
+    --settings-bg: hsla(220, 20%, 95%, 0.98);
+    --settings-card-bg: hsla(0, 0%, 100%, 0.95);
+    --settings-text: hsla(225, 20%, 25%, 1);
+    --settings-heading: hsla(225, 25%, 15%, 1);
+    --settings-option-bg: hsla(220, 20%, 94%, 0.9);
+    --settings-option-hover-bg: hsla(220, 25%, 88%, 0.95);
+    --settings-option-active-border: hsla(220, 60%, 50%, 0.9);
+    --settings-option-border: hsla(220, 15%, 80%, 0.5);
+}
+
+/* Awesome Theme — vibrant neon/synthwave */
+[data-theme='awesome'] {
+    --nav-bg: linear-gradient(90deg, hsla(280, 80%, 15%, 0.97), hsla(320, 70%, 18%, 0.97));
+    --nav-text: hsla(55, 100%, 70%, 1);
+    --board-bg: hsla(270, 50%, 6%, 1);
+    --list-bg: hsla(280, 40%, 12%, 0.88);
+    --list-text: hsla(195, 100%, 80%, 1);
+    --list-name-color: hsla(320, 100%, 70%, 1);
+    --list-droppable-bg: hsla(280, 50%, 22%, 0.95);
+    --task-bg: hsla(270, 35%, 15%, 0.92);
+    --task-border: hsla(320, 60%, 40%, 0.4);
+    --task-shadow: rgba(180, 0, 255, 0.2);
+    --task-hover-shadow: rgba(255, 0, 180, 0.35);
+    --task-preview-outline: hsla(180, 100%, 50%, 0.7);
+    --task-preview-bg: hsla(280, 40%, 20%, 0.9);
+    --list-preview-outline: hsla(320, 100%, 60%, 0.7);
+    --btn-bg: hsla(320, 60%, 40%, 0.5);
+    --btn-hover-bg: hsla(320, 70%, 55%, 0.7);
+    --btn-text: hsla(55, 100%, 85%, 1);
+    --modal-bg: hsla(275, 40%, 10%, 0.97);
+    --modal-shadow: rgba(180, 0, 255, 0.4);
+    --modal-title-color: hsla(55, 100%, 70%, 1);
+    --backdrop-bg: rgba(30, 0, 50, 0.8);
+    --form-field-text: hsla(195, 100%, 80%, 1);
+    --form-legend-color: hsla(320, 100%, 70%, 1);
+    --inline-input-bg: hsla(270, 35%, 15%, 0.92);
+    --inline-input-border: hsla(320, 60%, 40%, 0.4);
+    --inline-input-focus-border: hsla(180, 100%, 50%, 0.7);
+    --inline-input-text: hsla(195, 100%, 80%, 1);
+    --inline-add-bg: hsla(320, 70%, 45%, 0.7);
+    --inline-add-hover-bg: hsla(320, 80%, 55%, 0.85);
+    --inline-cancel-bg: hsla(270, 30%, 30%, 0.5);
+    --inline-cancel-hover-bg: hsla(270, 30%, 40%, 0.6);
+    --inline-btn-text: hsla(55, 100%, 85%, 1);
+    --settings-bg: hsla(275, 40%, 8%, 0.98);
+    --settings-card-bg: hsla(280, 40%, 14%, 0.9);
+    --settings-text: hsla(195, 100%, 80%, 1);
+    --settings-heading: hsla(320, 100%, 70%, 1);
+    --settings-option-bg: hsla(270, 35%, 18%, 0.85);
+    --settings-option-hover-bg: hsla(280, 40%, 25%, 0.9);
+    --settings-option-active-border: hsla(180, 100%, 50%, 0.9);
+    --settings-option-border: hsla(320, 50%, 35%, 0.5);
+}
+
+/* ══════════════════════════════════════════════════
+   BASE STYLES
+   ══════════════════════════════════════════════════ */
+
 html,
 body {
     margin: 0;
@@ -19,27 +160,181 @@ body {
 
 .nav-bar {
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: stretch;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
     padding-left: 10px;
-    background-color: hsla(225, 25%, 10%, 0.95);
-    color: white;
+    padding-right: 10px;
+    background: var(--nav-bg);
+    color: var(--nav-text);
     flex-grow: 0;
     height: 40px;
+}
+
+.nav-bar .nav-title {
+    pointer-events: none;
+}
+
+.nav-bar .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.settings-btn {
+    background: none;
+    border: none;
+    color: var(--nav-text);
+    font-size: 1.15rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background-color 0.15s ease;
+    display: flex;
+    align-items: center;
+}
+
+.settings-btn:hover {
+    background-color: rgba(128, 128, 128, 0.25);
+}
+
+/* ── Settings Page ── */
+
+#settings-page {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background-color: var(--settings-bg);
+    overflow-y: auto;
+}
+
+#settings-page.visible {
+    display: block;
+    animation: fade-in 0.2s ease-out forwards;
+}
+
+@keyframes fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.settings-container {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+
+.settings-header h1 {
+    margin: 0;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.5rem;
+    color: var(--settings-heading);
+}
+
+.settings-close-btn {
+    background: none;
+    border: none;
+    color: var(--settings-text);
+    font-size: 1.4rem;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 6px;
+    transition: background-color 0.15s ease;
+}
+
+.settings-close-btn:hover {
+    background-color: rgba(128, 128, 128, 0.25);
+}
+
+.settings-section h2 {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.1rem;
+    color: var(--settings-heading);
+    margin-bottom: 14px;
+}
+
+.theme-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.theme-option {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: 2px solid var(--settings-option-border);
+    background-color: var(--settings-option-bg);
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.2s ease;
+}
+
+.theme-option:hover {
+    background-color: var(--settings-option-hover-bg);
+}
+
+.theme-option.active {
+    border-color: var(--settings-option-active-border);
+}
+
+.theme-option-swatch {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.theme-option-swatch.swatch-dark {
+    background: linear-gradient(135deg, hsl(225, 20%, 8%), hsl(225, 15%, 18%));
+}
+
+.theme-option-swatch.swatch-light {
+    background: linear-gradient(135deg, hsl(220, 20%, 93%), hsl(0, 0%, 100%));
+}
+
+.theme-option-swatch.swatch-awesome {
+    background: linear-gradient(135deg, hsl(280, 80%, 15%), hsl(320, 100%, 50%), hsl(55, 100%, 60%));
+}
+
+.theme-option-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.theme-option-name {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1rem;
+    color: var(--settings-heading);
+}
+
+.theme-option-desc {
+    font-size: 0.8rem;
+    color: var(--settings-text);
+    opacity: 0.7;
+    margin-top: 2px;
 }
 
 .modal {
     padding: 10px;
     position: fixed;
     z-index: 100;
-    background-color: hsla(225, 15%, 13%, 0.95);
+    background-color: var(--modal-bg);
     border-radius: 12px;
     width: 30%;
     top: 30vh;
     left: 35%;
     display: none;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 8px 32px var(--modal-shadow);
 }
 
 .modal.visible {
@@ -58,13 +353,13 @@ body {
     border-color: hsla(0, 0%, 84%, 0.5);
 }
 .modal-title {
-    color: rgb(219, 219, 219);
+    color: var(--modal-title-color);
     font-family: 'Share Tech Mono', monospace;
     font-size: 1.2rem;
 }
 
 .board {
-    background-color: hsla(225, 20%, 8%, 1);
+    background-color: var(--board-bg);
     display: flex;
     flex-direction: row;
     width: 100%;
@@ -73,7 +368,7 @@ body {
 }
 
 .tasklist {
-    color: hsla(220, 15%, 90%, 1);
+    color: var(--list-text);
     display: flex;
     flex-direction: column;
     width: 250px;
@@ -81,14 +376,14 @@ body {
     margin: 5px;
     padding-left: 5px;
     margin-top: 10px;
-    background-color: hsla(225, 15%, 13%, 0.85);
+    background-color: var(--list-bg);
     height: fit-content;
     padding-bottom: 15px;
     border-radius: 12px;
 }
 
 .droppable {
-    background-color: hsla(225, 20%, 22%, 0.95);
+    background-color: var(--list-droppable-bg);
 }
 
 .tasklist-header {
@@ -106,7 +401,7 @@ body {
 .list-preview {
     animation: list-preview-pulse 1.2s ease-in-out infinite;
     border-radius: 12px;
-    outline: 2px solid hsla(225, 60%, 55%, 0.7);
+    outline: 2px solid var(--list-preview-outline);
     outline-offset: 2px;
 }
 
@@ -123,9 +418,9 @@ body {
 
 .task-preview {
     animation: task-preview-pulse 1.2s ease-in-out infinite;
-    outline: 2px solid hsla(200, 60%, 50%, 0.7);
+    outline: 2px solid var(--task-preview-outline);
     outline-offset: 1px;
-    background-color: hsla(200, 25%, 22%, 0.9) !important;
+    background-color: var(--task-preview-bg) !important;
 }
 
 @keyframes task-preview-pulse {
@@ -143,16 +438,16 @@ body {
 }
 
 .tasklist-name {
-    color: aliceblue;
+    color: var(--list-name-color);
     font-family: 'Share Tech Mono', monospace;
     padding-left: 10px;
     font-size: 1.2rem;
 }
 
 .add-task-btn {
-    background-color: hsla(225, 30%, 30%, 0.4);
+    background-color: var(--btn-bg);
     border: none;
-    color: rgb(255, 255, 255);
+    color: var(--btn-text);
     width: 25px;
     height: 25px;
     margin-right: 10px;
@@ -162,21 +457,21 @@ body {
 }
 
 .add-task-btn:hover {
-    background-color: hsla(225, 40%, 40%, 0.6);
+    background-color: var(--btn-hover-bg);
 }
 
 .task {
     font-family: sans-serif;
-    border: 1px solid hsla(220, 30%, 30%, 0.4);
+    border: 1px solid var(--task-border);
     font-size: 0.8rem;
     height: min-content;
     max-width: 200px;
-    background-color: hsla(225, 20%, 18%, 0.9);
+    background-color: var(--task-bg);
     border-radius: 10px;
     padding-left: 5px;
     margin: 0px 5px 5px 10px;
     list-style: none;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 6px var(--task-shadow);
     transition:
         transform 0.15s ease,
         box-shadow 0.15s ease;
@@ -184,7 +479,7 @@ body {
 
 .task:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 4px 12px var(--task-hover-shadow);
 }
 
 .task,
@@ -202,7 +497,7 @@ li {
     height: 100vh;
     top: 0;
     left: 0;
-    background: rgba(0, 0, 0, 0.75);
+    background: var(--backdrop-bg);
     z-index: 10;
     pointer-events: none;
     display: none;
@@ -223,13 +518,13 @@ form {
 form fieldset {
     display: flex;
     padding-left: 10px;
-    color: white;
+    color: var(--form-field-text);
     border-width: 1px;
     width: 100%;
 }
 
 fieldset legend {
-    color: aliceblue;
+    color: var(--form-legend-color);
     font-family: 'Share Tech Mono', monospace;
     padding-left: 10px;
     font-size: 1rem;
@@ -267,17 +562,17 @@ fieldset .buttons {
     font-family: sans-serif;
     font-size: 0.8rem;
     padding: 8px 10px;
-    border: 1px solid hsla(220, 30%, 30%, 0.4);
+    border: 1px solid var(--inline-input-border);
     border-radius: 10px;
-    background-color: hsla(225, 20%, 18%, 0.9);
-    color: hsla(220, 15%, 90%, 1);
+    background-color: var(--inline-input-bg);
+    color: var(--inline-input-text);
     outline: none;
     width: 100%;
     box-sizing: border-box;
 }
 
 .inline-task-form input:focus {
-    border-color: hsla(225, 40%, 45%, 0.8);
+    border-color: var(--inline-input-focus-border);
 }
 
 .inline-task-form-buttons {
@@ -292,22 +587,22 @@ fieldset .buttons {
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    color: white;
+    color: var(--inline-btn-text);
     transition: background-color 0.15s ease;
 }
 
 .inline-task-form .inline-task-add {
-    background-color: hsla(225, 30%, 30%, 0.6);
+    background-color: var(--inline-add-bg);
 }
 
 .inline-task-form .inline-task-add:hover {
-    background-color: hsla(225, 40%, 40%, 0.8);
+    background-color: var(--inline-add-hover-bg);
 }
 
 .inline-task-form .inline-task-cancel {
-    background-color: hsla(0, 0%, 30%, 0.4);
+    background-color: var(--inline-cancel-bg);
 }
 
 .inline-task-form .inline-task-cancel:hover {
-    background-color: hsla(0, 0%, 40%, 0.6);
+    background-color: var(--inline-cancel-hover-bg);
 }

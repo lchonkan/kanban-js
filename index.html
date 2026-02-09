@@ -15,8 +15,50 @@
     <body>
         <div id="backdrop"></div>
         <section id="navigation">
-            <nav class="nav-bar" id="main-navigation-bar">KAN BAN JS</nav>
+            <nav class="nav-bar" id="main-navigation-bar">
+                <span class="nav-title">KAN BAN JS</span>
+                <div class="nav-actions">
+                    <button class="settings-btn" id="open-settings" title="Settings">⚙</button>
+                </div>
+            </nav>
         </section>
+
+        <!-- Settings Page -->
+        <div id="settings-page">
+            <div class="settings-container">
+                <div class="settings-header">
+                    <h1>Settings</h1>
+                    <button class="settings-close-btn" id="close-settings" title="Close">✕</button>
+                </div>
+                <div class="settings-section">
+                    <h2>Color Theme</h2>
+                    <div class="theme-options" id="theme-options">
+                        <div class="theme-option" data-theme="dark">
+                            <div class="theme-option-swatch swatch-dark"></div>
+                            <div class="theme-option-info">
+                                <span class="theme-option-name">Dark</span>
+                                <span class="theme-option-desc">Classic dark interface — easy on the eyes</span>
+                            </div>
+                        </div>
+                        <div class="theme-option" data-theme="light">
+                            <div class="theme-option-swatch swatch-light"></div>
+                            <div class="theme-option-info">
+                                <span class="theme-option-name">Light</span>
+                                <span class="theme-option-desc">Clean and bright for daytime use</span>
+                            </div>
+                        </div>
+                        <div class="theme-option" data-theme="awesome">
+                            <div class="theme-option-swatch swatch-awesome"></div>
+                            <div class="theme-option-info">
+                                <span class="theme-option-name">Awesome</span>
+                                <span class="theme-option-desc">Neon synthwave vibes — totally radical</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <section id="app"></section>
     </body>
 </html>

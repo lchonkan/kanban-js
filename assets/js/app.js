@@ -1,4 +1,48 @@
 const DEFAULT_LISTS = ['Pendientes', 'En Proceso', 'Finalizadas'];
+const THEME_STORAGE_KEY = 'kanban-theme';
+
+/* ══════════════════════════════════════════════════
+   Theme Manager — handles switching & persistence
+   ══════════════════════════════════════════════════ */
+class ThemeManager {
+    static THEMES = ['dark', 'light', 'awesome'];
+
+    static init() {
+        const saved = localStorage.getItem(THEME_STORAGE_KEY) || 'dark';
+        ThemeManager.apply(saved);
+
+        // Wire up settings page open / close
+        document.getElementById('open-settings').addEventListener('click', ThemeManager.openSettings);
+        document.getElementById('close-settings').addEventListener('click', ThemeManager.closeSettings);
+
+        // Wire up theme option clicks
+        document.getElementById('theme-options').addEventListener('click', (e) => {
+            const option = e.target.closest('.theme-option');
+            if (!option) return;
+            const theme = option.dataset.theme;
+            ThemeManager.apply(theme);
+            localStorage.setItem(THEME_STORAGE_KEY, theme);
+        });
+    }
+
+    static apply(theme) {
+        if (!ThemeManager.THEMES.includes(theme)) theme = 'dark';
+        document.documentElement.setAttribute('data-theme', theme);
+
+        // Highlight the active option in settings
+        document.querySelectorAll('.theme-option').forEach((el) => {
+            el.classList.toggle('active', el.dataset.theme === theme);
+        });
+    }
+
+    static openSettings() {
+        document.getElementById('settings-page').classList.add('visible');
+    }
+
+    static closeSettings() {
+        document.getElementById('settings-page').classList.remove('visible');
+    }
+}
 
 class Task {
     constructor(taskID, parentID, taskName) {
@@ -402,6 +446,7 @@ class App {
     static init() {
         //* Start the App and Get information from HTML
         console.info('App Started');
+        ThemeManager.init();
         const board = new Board('active');
     }
 }
