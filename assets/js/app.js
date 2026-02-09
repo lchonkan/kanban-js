@@ -21,6 +21,8 @@ class TaskList {
         if (!document.getElementById(id)) {
             console.log(`Lista ${listName} creada con exito`);
             thisList = document.createElement('div');
+            thisList.classList.add('tasklist-wrapper');
+            thisList.setAttribute('draggable', 'true');
             thisList.innerHTML = `
             <div class="tasklist" id="${id}">
             <div class="tasklist-header">
@@ -32,6 +34,7 @@ class TaskList {
             //console.log(thisList);
             targetBoard.appendChild(thisList);
         }
+        this.wrapperEl = thisList;
 
         //console.log(thisList);
 
@@ -202,6 +205,75 @@ class Board {
         });
 
         console.log('Listas en el tablero actual:', this.tasklists);
+
+        this.connectListDrag();
+    }
+
+    connectListDrag() {
+        const board = document.getElementById('board');
+        const wrappers = board.querySelectorAll('.tasklist-wrapper');
+
+        wrappers.forEach((wrapper) => {
+            wrapper.addEventListener('dragstart', (event) => {
+                // Only allow drag when starting from the header
+                const header = wrapper.querySelector('.tasklist-header');
+                if (!header.contains(event.target)) {
+                    event.preventDefault();
+                    return;
+                }
+                event.dataTransfer.setData('application/x-list', wrapper.querySelector('.tasklist').id);
+                event.dataTransfer.effectAllowed = 'move';
+                wrapper.classList.add('list-dragging');
+            });
+
+            wrapper.addEventListener('dragend', () => {
+                wrapper.classList.remove('list-dragging');
+                board.querySelectorAll('.list-drop-target').forEach((el) => {
+                    el.classList.remove('list-drop-target');
+                });
+            });
+
+            wrapper.addEventListener('dragover', (event) => {
+                if (event.dataTransfer.types.includes('application/x-list')) {
+                    event.preventDefault();
+                    wrapper.classList.add('list-drop-target');
+                }
+            });
+
+            wrapper.addEventListener('dragleave', (event) => {
+                if (!wrapper.contains(event.relatedTarget)) {
+                    wrapper.classList.remove('list-drop-target');
+                }
+            });
+
+            wrapper.addEventListener('drop', (event) => {
+                if (!event.dataTransfer.types.includes('application/x-list')) {
+                    return;
+                }
+                event.preventDefault();
+                event.stopPropagation();
+                wrapper.classList.remove('list-drop-target');
+
+                const draggedListId = event.dataTransfer.getData('application/x-list');
+                const draggedWrapper = document.getElementById(draggedListId).parentElement;
+
+                if (draggedWrapper === wrapper) return;
+
+                // Determine if cursor is on left or right half of target
+                const rect = wrapper.getBoundingClientRect();
+                const midpoint = rect.left + rect.width / 2;
+
+                if (event.clientX < midpoint) {
+                    board.insertBefore(draggedWrapper, wrapper);
+                } else {
+                    board.insertBefore(draggedWrapper, wrapper.nextSibling);
+                }
+
+                // Update tasklists array to match new DOM order
+                const domOrder = [...board.querySelectorAll('.tasklist-wrapper .tasklist')].map((el) => el.id);
+                this.tasklists.sort((a, b) => domOrder.indexOf(a.id) - domOrder.indexOf(b.id));
+            });
+        });
     }
 
     addTaskList(newList) {
