@@ -213,66 +213,103 @@ class Board {
         const board = document.getElementById('board');
         const wrappers = board.querySelectorAll('.tasklist-wrapper');
 
+        let mouseDownTarget = null;
+        let draggedWrapper = null;
+        let originalNextSibling = null; // to restore position on cancel
+
         wrappers.forEach((wrapper) => {
+            wrapper.addEventListener('mousedown', (event) => {
+                mouseDownTarget = event.target;
+            });
+
             wrapper.addEventListener('dragstart', (event) => {
-                // Only allow drag when starting from the header
+                // If the drag source is a task (not the wrapper itself), don't interfere
+                if (event.target !== wrapper) {
+                    return;
+                }
+
+                // Only allow list drag when starting from the header
                 const header = wrapper.querySelector('.tasklist-header');
-                if (!header.contains(event.target)) {
+                if (!header.contains(mouseDownTarget)) {
                     event.preventDefault();
                     return;
                 }
                 event.dataTransfer.setData('application/x-list', wrapper.querySelector('.tasklist').id);
                 event.dataTransfer.effectAllowed = 'move';
-                wrapper.classList.add('list-dragging');
-            });
 
-            wrapper.addEventListener('dragend', () => {
-                wrapper.classList.remove('list-dragging');
-                board.querySelectorAll('.list-drop-target').forEach((el) => {
-                    el.classList.remove('list-drop-target');
+                // Remember original position so we can restore on cancel
+                draggedWrapper = wrapper;
+                originalNextSibling = wrapper.nextSibling;
+
+                // Delay adding visual classes so the drag image captures clean state
+                requestAnimationFrame(() => {
+                    wrapper.classList.add('list-dragging');
+                    wrapper.classList.add('list-preview');
                 });
             });
 
-            wrapper.addEventListener('dragover', (event) => {
-                if (event.dataTransfer.types.includes('application/x-list')) {
-                    event.preventDefault();
-                    wrapper.classList.add('list-drop-target');
+            wrapper.addEventListener('dragend', (event) => {
+                if (!draggedWrapper) return;
+
+                // If the drop didn't happen (cancelled), restore original position
+                if (event.dataTransfer.dropEffect === 'none') {
+                    if (originalNextSibling) {
+                        board.insertBefore(draggedWrapper, originalNextSibling);
+                    } else {
+                        board.appendChild(draggedWrapper);
+                    }
                 }
+
+                draggedWrapper.classList.remove('list-dragging');
+                draggedWrapper.classList.remove('list-preview');
+                draggedWrapper = null;
+                originalNextSibling = null;
             });
+        });
 
-            wrapper.addEventListener('dragleave', (event) => {
-                if (!wrapper.contains(event.relatedTarget)) {
-                    wrapper.classList.remove('list-drop-target');
+        // Use a single dragover on the board for efficient position tracking
+        board.addEventListener('dragover', (event) => {
+            if (!event.dataTransfer.types.includes('application/x-list')) return;
+            if (!draggedWrapper) return;
+            event.preventDefault();
+
+            // Find which wrapper the cursor is over
+            const targetWrapper = event.target.closest('.tasklist-wrapper');
+            if (!targetWrapper || targetWrapper === draggedWrapper) return;
+
+            // Determine left/right half
+            const rect = targetWrapper.getBoundingClientRect();
+            const midpoint = rect.left + rect.width / 2;
+
+            if (event.clientX < midpoint) {
+                // Insert before the target
+                if (draggedWrapper.nextSibling !== targetWrapper) {
+                    board.insertBefore(draggedWrapper, targetWrapper);
                 }
-            });
-
-            wrapper.addEventListener('drop', (event) => {
-                if (!event.dataTransfer.types.includes('application/x-list')) {
-                    return;
+            } else {
+                // Insert after the target
+                if (targetWrapper.nextSibling !== draggedWrapper) {
+                    board.insertBefore(draggedWrapper, targetWrapper.nextSibling);
                 }
-                event.preventDefault();
-                event.stopPropagation();
-                wrapper.classList.remove('list-drop-target');
+            }
+        });
 
-                const draggedListId = event.dataTransfer.getData('application/x-list');
-                const draggedWrapper = document.getElementById(draggedListId).parentElement;
+        board.addEventListener('drop', (event) => {
+            if (!event.dataTransfer.types.includes('application/x-list')) return;
+            if (!draggedWrapper) return;
+            event.preventDefault();
+            event.stopPropagation();
 
-                if (draggedWrapper === wrapper) return;
+            // Finalize: remove preview styling
+            draggedWrapper.classList.remove('list-dragging');
+            draggedWrapper.classList.remove('list-preview');
 
-                // Determine if cursor is on left or right half of target
-                const rect = wrapper.getBoundingClientRect();
-                const midpoint = rect.left + rect.width / 2;
+            // Update tasklists array to match new DOM order
+            const domOrder = [...board.querySelectorAll('.tasklist-wrapper .tasklist')].map((el) => el.id);
+            this.tasklists.sort((a, b) => domOrder.indexOf(a.id) - domOrder.indexOf(b.id));
 
-                if (event.clientX < midpoint) {
-                    board.insertBefore(draggedWrapper, wrapper);
-                } else {
-                    board.insertBefore(draggedWrapper, wrapper.nextSibling);
-                }
-
-                // Update tasklists array to match new DOM order
-                const domOrder = [...board.querySelectorAll('.tasklist-wrapper .tasklist')].map((el) => el.id);
-                this.tasklists.sort((a, b) => domOrder.indexOf(a.id) - domOrder.indexOf(b.id));
-            });
+            draggedWrapper = null;
+            originalNextSibling = null;
         });
     }
 

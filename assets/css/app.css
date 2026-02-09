@@ -100,12 +100,20 @@ body {
 }
 
 .list-dragging {
-    opacity: 0.5;
+    opacity: 0.4;
 }
 
-.list-drop-target {
-    border: 2px dashed hsla(225, 40%, 50%, 0.6);
+.list-preview {
+    animation: list-preview-pulse 1.2s ease-in-out infinite;
     border-radius: 12px;
+    outline: 2px solid hsla(225, 60%, 55%, 0.7);
+    outline-offset: 2px;
+}
+
+@keyframes list-preview-pulse {
+    0%   { opacity: 0.25; }
+    50%  { opacity: 0.65; }
+    100% { opacity: 0.25; }
 }
 
 .tasklist-name {
