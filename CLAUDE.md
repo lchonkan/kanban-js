@@ -41,22 +41,50 @@ git merge --no-ff feature/short-description
 
 ## Project Structure
 
-- `src/app.js` -- Main application (classes, auth routing, UI)
-- `src/config.js` -- Supabase client initialization from env vars
-- `src/auth.js` -- Auth helpers (signUp, signIn, signOut, onAuthStateChange)
-- `src/db.js` -- Data layer (all Supabase CRUD operations)
-- `src/toast.js` -- Toast notification system
-- `assets/css/app.css` -- All styles including 3 color themes
-- `supabase/migration.sql` -- Database schema, RLS policies, seed trigger
-- `index.html` -- Vite entry point
+```
+src/
+├── main.js                   Vue app bootstrap + Pinia + Router
+├── App.vue                   Root component (auth routing, layout)
+├── router.js                 Vue Router (login vs board routes, auth guard)
+├── stores/
+│   ├── auth.js               Pinia store — auth state + actions
+│   ├── board.js              Pinia store — lists, tasks, CRUD actions
+│   └── theme.js              Pinia store — theme state + persistence
+├── services/
+│   ├── supabase.js           Supabase client init (env vars)
+│   ├── auth.js               Auth API calls (pure functions, no Vue dependency)
+│   └── db.js                 Data API calls (pure functions, no Vue dependency)
+├── components/
+│   ├── AppNavbar.vue         Top nav (title, settings gear, sign-out)
+│   ├── AuthForm.vue          Login/signup form with validation
+│   ├── BoardView.vue         Board container with vuedraggable for list reordering
+│   ├── TaskListColumn.vue    Single kanban column with vuedraggable for task DnD
+│   ├── TaskCard.vue          Individual task card (check, title, edit btn)
+│   ├── TaskEditModal.vue     Modal for editing task title/description
+│   ├── ThemeSettings.vue     Theme picker overlay
+│   ├── LoadingSpinner.vue    Loading state
+│   └── ToastNotification.vue Toast messages
+assets/css/
+└── app.css                   All styles including 3 color themes (CSS custom properties)
+supabase/
+└── migration.sql             Database schema, RLS policies, seed trigger
+index.html                    Vite entry point
+```
 
 ## Tech Stack
 
-- **Frontend:** Vanilla JS with ES modules, built with Vite
+- **Frontend:** Vue 3 (Composition API) + Pinia + Vue Router, built with Vite
+- **Drag-and-Drop:** vuedraggable (SortableJS wrapper)
 - **Backend:** Supabase (Postgres + Auth + Row-Level Security)
 - **CSS:** Custom properties for 3 themes (dark, light, awesome)
-- **CI:** ESLint + Prettier + Vite build check
+- **CI:** ESLint (with eslint-plugin-vue) + Prettier + Vite build check
 - **Deploy:** Vite build -> GitHub Pages
+
+## Architecture
+
+- **Services layer** (`src/services/`) contains pure JS functions that call Supabase. No Vue dependency — can be reused with any framework.
+- **Pinia stores** (`src/stores/`) hold reactive state and call services. Components read from stores.
+- **Components** (`src/components/`) are Vue SFCs. They read from stores and emit events upward.
 
 ## Environment
 
@@ -67,9 +95,10 @@ git merge --no-ff feature/short-description
 ## Code Conventions
 
 - ES modules (`import`/`export`) -- no CommonJS
-- All user content rendered via `textContent` or safe DOM APIs -- never use `innerHTML` with user data
+- Vue 3 Composition API with `<script setup>` -- no Options API
+- All user content rendered via `textContent` or Vue's default text interpolation (auto-escaped) -- never use `v-html` with user data
 - Supabase generates all IDs (UUIDs) server-side -- no client-side ID generation
-- Database queries must not be awaited inside `onAuthStateChange` callbacks (causes deadlock). Use `setTimeout(fn, 0)` to break out first.
+- Database queries must not be awaited inside `onAuthStateChange` callbacks (causes deadlock). Use `setTimeout(fn, 0)` to break out first. This is handled in `App.vue`'s watcher.
 - Run `npm run validate` (lint + format check) before committing.
 
 ## Commit Messages
