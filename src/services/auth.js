@@ -27,6 +27,11 @@ export async function getSession() {
     return data.session;
 }
 
+export async function resendConfirmation(email) {
+    const { error } = await supabase.auth.resend({ type: 'signup', email });
+    if (error) throw error;
+}
+
 export function getUser(session) {
     return session?.user ?? null;
 }
