@@ -88,7 +88,8 @@ This creates:
 
 1. In the Supabase dashboard, go to **Authentication** > **Providers**
 2. Ensure **Email** provider is enabled (it is by default)
-3. For local development, go to **Authentication** > **Settings** and disable **Confirm email** to skip email verification. Re-enable it for production.
+3. **Confirm email** is enabled by default -- the app supports this and will show a "Check your email" screen after signup
+4. Configure rate limits in **Authentication** > **Rate Limits** (see [Security](#5-security) for recommended values)
 
 ### Step 4: Get Your API Credentials
 
@@ -122,6 +123,8 @@ npm run dev
 3. Sign up with an email and password
 4. You should see 3 default lists with no tasks
 5. Add a task, refresh the page -- it persists!
+
+> **Note:** With email confirmation enabled, new signups will see a "Check your email" screen. Click the confirmation link in the email to activate the account.
 
 ---
 
