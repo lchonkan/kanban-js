@@ -639,7 +639,7 @@ class AuthUI {
                 errorEl.textContent = 'Please enter a valid email address.';
                 return;
             }
-            if (password.length < 6) {
+            if (isSignUp && password.length < 6) {
                 errorEl.textContent = 'Password must be at least 6 characters.';
                 return;
             }
