@@ -272,6 +272,146 @@ export const useBoardStore = defineStore('board', () => {
         await db.reorderLists(positions);
     }
 
+    async function addList(title) {
+        const maxPos = lists.value.reduce((m, l) => Math.max(m, l.position ?? 0), 0);
+        const position = maxPos + 1;
+        const tempId = 'temp-list-' + Date.now();
+        const tempList = { id: tempId, title, position, tasks: [] };
+        lists.value.push(tempList);
+
+        try {
+            const record = await db.createList(title, position);
+            const idx = lists.value.findIndex((l) => l.id === tempId);
+            if (idx !== -1) {
+                Object.assign(lists.value[idx], { ...record, tasks: [] });
+            }
+        } catch (err) {
+            const idx = lists.value.findIndex((l) => l.id === tempId);
+            if (idx !== -1) {
+                lists.value.splice(idx, 1);
+            }
+            throw err;
+        }
+    }
+
+    async function renameList(listId, title) {
+        const list = lists.value.find((l) => l.id === listId);
+        if (!list) return;
+
+        const prevTitle = list.title;
+        list.title = title;
+
+        try {
+            await db.renameList(listId, title);
+        } catch (err) {
+            list.title = prevTitle;
+            throw err;
+        }
+    }
+
+    async function deleteList(listId) {
+        const idx = lists.value.findIndex((l) => l.id === listId);
+        if (idx === -1) return;
+
+        const [removed] = lists.value.splice(idx, 1);
+
+        try {
+            await db.deleteList(listId);
+        } catch (err) {
+            lists.value.splice(idx, 0, removed);
+            throw err;
+        }
+    }
+
+    async function duplicateList(listId) {
+        const source = lists.value.find((l) => l.id === listId);
+        if (!source) return;
+
+        const sourceIdx = lists.value.indexOf(source);
+        const maxPos = lists.value.reduce((m, l) => Math.max(m, l.position ?? 0), 0);
+        const position = maxPos + 1;
+        const newTitle = source.title + ' (copy)';
+
+        // Optimistic: insert a temp list right after the source
+        const tempId = 'temp-dup-' + Date.now();
+        const tempList = {
+            id: tempId,
+            title: newTitle,
+            position,
+            tasks: source.tasks.map((t) => ({
+                ...t,
+                id: 'temp-task-' + Math.random().toString(36).slice(2),
+            })),
+        };
+        lists.value.splice(sourceIdx + 1, 0, tempList);
+
+        try {
+            const result = await db.duplicateListWithTasks(listId, newTitle, position);
+            const idx = lists.value.findIndex((l) => l.id === tempId);
+            if (idx !== -1) {
+                lists.value[idx] = {
+                    ...result.list,
+                    tasks: result.tasks.map(mapTask),
+                };
+            }
+        } catch (err) {
+            const idx = lists.value.findIndex((l) => l.id === tempId);
+            if (idx !== -1) {
+                lists.value.splice(idx, 1);
+            }
+            throw err;
+        }
+    }
+
+    async function archiveList(listId) {
+        // Lazy-create archived list if needed
+        if (!archivedList.value) {
+            const maxPos = lists.value.reduce((m, l) => Math.max(m, l.position ?? 0), 0);
+            const record = await db.createList(ARCHIVED_LIST_TITLE, maxPos + 1000);
+            archivedList.value = { ...record, tasks: [] };
+        }
+
+        const idx = lists.value.findIndex((l) => l.id === listId);
+        if (idx === -1) return;
+
+        const [list] = lists.value.splice(idx, 1);
+        const movedTasks = [...list.tasks];
+
+        // Move all tasks to the archived list
+        for (const task of movedTasks) {
+            task.listId = archivedList.value.id;
+            task.position = archivedList.value.tasks.length;
+            archivedList.value.tasks.push(task);
+        }
+
+        try {
+            // Re-assign all tasks to archived list in DB
+            if (movedTasks.length > 0) {
+                const updates = movedTasks.map((t) =>
+                    db.updateTask(t.id, {
+                        list_id: archivedList.value.id,
+                        position: archivedList.value.tasks.indexOf(t),
+                    })
+                );
+                await Promise.all(updates);
+            }
+            // Delete the now-empty list
+            await db.deleteList(listId);
+        } catch (err) {
+            // Rollback: remove tasks from archive, restore list
+            for (const task of movedTasks) {
+                const archIdx = archivedList.value.tasks.findIndex((t) => t.id === task.id);
+                if (archIdx !== -1) archivedList.value.tasks.splice(archIdx, 1);
+            }
+            list.tasks = movedTasks;
+            for (const task of movedTasks) {
+                task.listId = listId;
+            }
+            lists.value.splice(idx, 0, list);
+            throw err;
+        }
+    }
+
     return {
         lists,
         archivedList,
@@ -289,5 +429,10 @@ export const useBoardStore = defineStore('board', () => {
         reorderTasksInList,
         moveTask,
         reorderLists,
+        addList,
+        renameList,
+        deleteList,
+        duplicateList,
+        archiveList,
     };
 });
