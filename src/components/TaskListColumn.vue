@@ -6,9 +6,10 @@
             </div>
             <draggable
                 :list="list.tasks"
-                group="tasks"
+                :group="readonly ? { name: 'tasks', pull: false, put: false } : 'tasks'"
                 item-key="id"
                 :animation="150"
+                :sort="!readonly"
                 ghost-class="task-preview"
                 drag-class="task-dragging"
                 @change="onTaskChange"
@@ -17,7 +18,7 @@
                     <TaskCard :task="element" @edit="(task) => $emit('editTask', task)" />
                 </template>
             </draggable>
-            <div class="add-task-row">
+            <div v-if="!hideAddTask" class="add-task-row">
                 <input
                     ref="newTaskInput"
                     v-model="newTaskTitle"
@@ -42,6 +43,8 @@ import * as db from '../services/db.js';
 
 const props = defineProps({
     list: { type: Object, required: true },
+    hideAddTask: { type: Boolean, default: false },
+    readonly: { type: Boolean, default: false },
 });
 
 defineEmits(['editTask']);

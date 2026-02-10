@@ -72,6 +72,13 @@
     --toast-error-text: hsla(0, 100%, 90%, 1);
     --toast-success-bg: hsla(140, 50%, 22%, 0.95);
     --toast-success-text: hsla(140, 100%, 90%, 1);
+    --card-delete-bg: hsla(0, 55%, 35%, 0.8);
+    --card-delete-hover-bg: hsla(0, 60%, 45%, 0.9);
+    --card-archive-bg: hsla(35, 55%, 35%, 0.8);
+    --card-archive-hover-bg: hsla(35, 60%, 45%, 0.9);
+    --card-confirm-label-color: hsla(0, 70%, 65%, 1);
+    --archive-toggle-active-bg: hsla(220, 50%, 35%, 0.7);
+    --archived-column-border: hsla(220, 20%, 35%, 0.5);
 }
 
 /* Light Theme */
@@ -141,6 +148,13 @@
     --toast-error-text: hsla(0, 65%, 40%, 1);
     --toast-success-bg: hsla(140, 50%, 93%, 0.98);
     --toast-success-text: hsla(140, 50%, 30%, 1);
+    --card-delete-bg: hsla(0, 60%, 50%, 0.8);
+    --card-delete-hover-bg: hsla(0, 65%, 42%, 0.9);
+    --card-archive-bg: hsla(35, 60%, 48%, 0.8);
+    --card-archive-hover-bg: hsla(35, 65%, 40%, 0.9);
+    --card-confirm-label-color: hsla(0, 65%, 50%, 1);
+    --archive-toggle-active-bg: hsla(220, 50%, 50%, 0.3);
+    --archived-column-border: hsla(220, 15%, 75%, 0.6);
 }
 
 /* Awesome Theme — vibrant neon/synthwave */
@@ -210,6 +224,13 @@
     --toast-error-text: hsla(0, 100%, 85%, 1);
     --toast-success-bg: hsla(140, 55%, 18%, 0.95);
     --toast-success-text: hsla(140, 100%, 85%, 1);
+    --card-delete-bg: hsla(350, 70%, 40%, 0.8);
+    --card-delete-hover-bg: hsla(350, 80%, 50%, 0.9);
+    --card-archive-bg: hsla(45, 80%, 35%, 0.8);
+    --card-archive-hover-bg: hsla(45, 90%, 45%, 0.9);
+    --card-confirm-label-color: hsla(0, 80%, 65%, 1);
+    --archive-toggle-active-bg: hsla(320, 70%, 40%, 0.6);
+    --archived-column-border: hsla(320, 50%, 40%, 0.5);
 }
 
 /* ══════════════════════════════════════════════════
@@ -978,7 +999,8 @@ body {
 
 .task-card-footer {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
     padding: 0 18px 16px;
 }
 
@@ -996,6 +1018,112 @@ body {
 
 .card-save-btn:hover {
     background-color: var(--card-save-hover-bg);
+}
+
+/* ── Danger Actions (delete / archive) ── */
+
+.card-danger-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.card-delete-btn,
+.card-archive-btn {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.78rem;
+    padding: 6px 14px;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.card-delete-btn {
+    background-color: var(--card-delete-bg);
+}
+
+.card-delete-btn:hover {
+    background-color: var(--card-delete-hover-bg);
+}
+
+.card-archive-btn {
+    background-color: var(--card-archive-bg);
+}
+
+.card-archive-btn:hover {
+    background-color: var(--card-archive-hover-bg);
+}
+
+.card-confirm-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--card-confirm-label-color);
+    font-weight: bold;
+}
+
+.card-confirm-delete-btn {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    padding: 5px 12px;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--card-delete-bg);
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.card-confirm-delete-btn:hover {
+    background-color: var(--card-delete-hover-bg);
+}
+
+.card-cancel-delete-btn {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    padding: 5px 12px;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--btn-bg);
+    color: var(--btn-text);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.card-cancel-delete-btn:hover {
+    background-color: var(--btn-hover-bg);
+}
+
+/* ── Archive Toggle (navbar) ── */
+
+.archive-toggle-btn {
+    background: none;
+    border: 1px solid rgba(128, 128, 128, 0.3);
+    color: var(--nav-text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 6px;
+    transition: background-color 0.15s ease;
+}
+
+.archive-toggle-btn:hover {
+    background-color: rgba(128, 128, 128, 0.25);
+}
+
+.archive-toggle-btn.active {
+    background-color: var(--archive-toggle-active-bg);
+}
+
+/* ── Archived Column ── */
+
+.archived-column {
+    opacity: 0.7;
+    border-left: 2px dashed var(--archived-column-border);
+    padding-left: 4px;
+    margin-left: 4px;
 }
 
 #backdrop {

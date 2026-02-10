@@ -1,8 +1,8 @@
 # KAN BAN JS
 
-A vanilla HTML, CSS, and JavaScript kanban board with **Supabase** backend for authentication and data persistence. Each user gets a private, persisted board with drag-and-drop, color themes, and task editing -- no frameworks, just ES modules and Vite.
+A kanban board built with **Vue 3**, **Pinia**, and **Supabase** for authentication and data persistence. Each user gets a private, persisted board with drag-and-drop, color themes, task editing, archiving, and deletion.
 
-> **Status:** v0.2.0 -- Supabase auth (email+password), Row-Level Security, persistent board state, 3 color themes.
+> **Status:** v0.3.0 -- Vue 3 + Pinia, Supabase auth (email+password), Row-Level Security, persistent board state, 3 color themes, task archive and delete.
 
 ---
 
@@ -127,52 +127,95 @@ npm run dev
 
 ## 3. System Architecture
 
-### Class Hierarchy
+For a detailed architecture diagram, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+### Component Hierarchy
 
 ```
-App (static entry point)
- ├── AuthUI (static)        -- login/signup form handling
- ├── ThemeManager (static)  -- color theme switching & persistence (Supabase + localStorage cache)
- ├── TaskCardModal (static) -- edit task title & description
- └── Board
-      └── TaskList[]         (one per column, loaded from Supabase)
-           └── Task[]        (individual task items)
+App.vue (root — auth routing, board loading)
+ ├── AuthForm.vue           Login/signup form with validation
+ ├── LoadingSpinner.vue     Shown while fetching board data
+ └── Board Page
+      ├── AppNavbar.vue     Top nav (title, archive toggle, settings, sign-out)
+      ├── ThemeSettings.vue Theme picker overlay
+      ├── BoardView.vue     Board container
+      │    ├── draggable    List reordering (vuedraggable)
+      │    │    └── TaskListColumn.vue[]  One per kanban column
+      │    │         ├── draggable        Task reordering (vuedraggable)
+      │    │         │    └── TaskCard.vue[]  Individual task cards
+      │    │         └── add-task-row     Inline new task input
+      │    ├── TaskListColumn.vue         Archived column (readonly, no DnD)
+      │    └── TaskEditModal.vue          Edit title/description, archive, delete
+      └── ToastNotification.vue           Toast messages
 ```
 
-| Class           | Responsibility                                                                                             |
-| --------------- | ---------------------------------------------------------------------------------------------------------- |
-| `App`           | Entry point -- initializes UI, listens for auth state changes, loads/clears board                          |
-| `AuthUI`        | Handles login/signup form with client-side validation, toggles between sign-in and create-account modes    |
-| `ThemeManager`  | Applies themes (`dark`, `light`, `awesome`); persists to Supabase `profiles` table with localStorage cache |
-| `TaskCardModal` | Modal for editing task title and description; saves changes to Supabase                                    |
-| `Board`         | Renders board, loads lists/tasks from Supabase, manages drag-and-drop with position persistence            |
-| `TaskList`      | Renders a column, manages its `tasks[]` array, creates new tasks via Supabase                              |
-| `Task`          | Data object: `id`, `title`, `description`, `completed`, `listId`, `position`                               |
+### Layered Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  Components (Vue SFCs)                                  │
+│  Read from stores, emit events, render UI               │
+├─────────────────────────────────────────────────────────┤
+│  Pinia Stores (src/stores/)                             │
+│  Reactive state, business logic, call services          │
+│  ├── auth.js    — session state, signIn/signUp/signOut  │
+│  ├── board.js   — lists, tasks, archive, CRUD actions   │
+│  └── theme.js   — theme state, apply + persist          │
+├─────────────────────────────────────────────────────────┤
+│  Services (src/services/)                               │
+│  Pure JS functions, no Vue dependency                   │
+│  ├── supabase.js — client initialization                │
+│  ├── auth.js     — auth API calls                       │
+│  └── db.js       — data API calls, ARCHIVED_LIST_TITLE  │
+├─────────────────────────────────────────────────────────┤
+│  Supabase (Postgres + Auth + RLS)                       │
+│  Tables: profiles, lists, tasks                         │
+│  All scoped to auth.uid() via Row-Level Security        │
+└─────────────────────────────────────────────────────────┘
+```
 
 ### Data Flow
 
 ```
-User Action → DOM Event → Class Method → Supabase API Call → DOM Mutation
-                                       ↘ Internal Array Update
+User Action → Vue Event → Store Action → Service Function → Supabase API
+                        ↘ Reactive State Update → Component Re-render
 ```
 
-All mutations (create, update, reorder, complete) are persisted to Supabase in real-time. Errors are surfaced via toast notifications.
+All mutations (create, update, reorder, complete, delete, archive) are persisted to Supabase immediately. Errors are surfaced via toast notifications.
 
 ### Module Map
 
 ```
 kanban-js/
-├── index.html                 Vite entry point (auth page, board page, modals)
+├── index.html                 Vite entry point
 ├── src/
-│   ├── app.js                 Main application (classes + auth routing)
-│   ├── config.js              Supabase client initialization
-│   ├── auth.js                Auth helper functions (signUp, signIn, signOut)
-│   ├── db.js                  Data layer (fetchBoard, createTask, updateTask, etc.)
-│   └── toast.js               Toast notification system
+│   ├── main.js                Vue bootstrap (createApp + Pinia + Router)
+│   ├── App.vue                Root component (auth routing, board loading)
+│   ├── router.js              Vue Router (hash history, auth guard)
+│   ├── stores/
+│   │   ├── auth.js            Auth state + actions
+│   │   ├── board.js           Board state + CRUD + archive/delete actions
+│   │   └── theme.js           Theme state + persistence
+│   ├── services/
+│   │   ├── supabase.js        Supabase client init (env vars)
+│   │   ├── auth.js            Auth API (signUp, signIn, signOut, etc.)
+│   │   └── db.js              Data API (fetchBoard, createTask, deleteTask, etc.)
+│   └── components/
+│       ├── AppNavbar.vue      Top nav (title, archive toggle, settings, sign-out)
+│       ├── AuthForm.vue       Login/signup form with validation
+│       ├── BoardView.vue      Board layout + archived column
+│       ├── TaskListColumn.vue Kanban column (supports readonly mode)
+│       ├── TaskCard.vue       Task card (check, title, edit btn)
+│       ├── TaskEditModal.vue  Edit modal (title, desc, archive, delete)
+│       ├── ThemeSettings.vue  Theme picker overlay
+│       ├── LoadingSpinner.vue Loading spinner
+│       └── ToastNotification.vue Toast messages
 ├── assets/
-│   └── css/app.css            All styles inc. 3 themes, auth page, toasts
+│   └── css/app.css            All styles + 3 themes (CSS custom properties)
 ├── supabase/
 │   └── migration.sql          Database schema, RLS policies, seed trigger
+├── docs/
+│   └── ARCHITECTURE.md        Detailed software architecture diagram
 ├── vite.config.js             Vite configuration
 ├── .env.example               Environment variable template
 ├── package.json               Dependencies and scripts
@@ -183,33 +226,6 @@ kanban-js/
     │   ├── ci.yml             Lint + format + build checks
     │   └── deploy.yml         Vite build + GitHub Pages deploy
     └── PULL_REQUEST_TEMPLATE.md
-```
-
-### DOM Structure
-
-```
-body
- ├── #auth-page                    (login/signup form, shown when signed out)
- │    └── .auth-container
- │         ├── .auth-brand         ("KAN BAN JS")
- │         └── .auth-card          (email, password, submit, toggle link)
- ├── #loading-spinner              (shown while fetching board data)
- └── #board-page                   (shown when signed in)
-      ├── #navigation > .nav-bar   (title + settings gear + sign-out button)
-      ├── #settings-page           (full-screen theme settings overlay)
-      ├── #task-card-modal         (task edit card with backdrop)
-      └── #app
-           └── #board.board
-                ├── .tasklist-wrapper (draggable)
-                │    └── .tasklist    (column header + task items + add-task input)
-                │         ├── .tasklist-header
-                │         ├── li.task (draggable)
-                │         │    └── .task-content
-                │         │         ├── .task-check  (✓ toggle)
-                │         │         ├── .task-title
-                │         │         └── .task-edit-btn (✎)
-                │         └── .add-task-row (input + button)
-                └── ... (more lists)
 ```
 
 ---
@@ -225,6 +241,7 @@ The database uses 3 tables with Row-Level Security. See `supabase/migration.sql`
 profiles (id UUID PK → auth.users, theme TEXT default 'dark')
 
 -- Kanban columns (3 default lists seeded on signup)
+-- The special title '__archived__' is used as a sentinel for the archive list
 lists (id UUID PK, user_id UUID FK, title TEXT, position INT)
 
 -- Task cards
@@ -243,6 +260,15 @@ When a new user signs up, a database trigger:
 1. Creates a row in `profiles` with default theme `'dark'`
 2. Inserts 3 default lists: Pendientes (pos 0), En Proceso (pos 1), Finalizadas (pos 2)
 
+### Archive System
+
+The archive uses the existing `lists` table -- no schema migration required:
+
+- A list with the sentinel title `__archived__` serves as the archive container
+- This list is lazily created (via `db.createList()`) on the first archive action
+- The board store separates `__archived__` from regular lists during `loadBoard`
+- Archived tasks can be unarchived back to the first regular list
+
 ---
 
 ## 5. Security
@@ -257,7 +283,12 @@ When a new user signs up, a database trigger:
 
 - **Row-Level Security (RLS):** Every table has policies ensuring users can only access their own rows
 - **Publishable API key is safe client-side:** It only grants access through RLS policies -- it cannot bypass them
-- **XSS mitigated:** All user content is rendered via `textContent` and safe DOM APIs (no `innerHTML` with user data)
+- **XSS mitigated:** All user content is rendered via Vue's default text interpolation (auto-escaped) -- no `v-html` with user data
+
+### Task Deletion
+
+- Permanent delete requires a 2-step confirmation in the UI ("Delete" -> "Delete this task?" -> "Yes, delete")
+- Delete removes the task from the database permanently via `supabase.from('tasks').delete()`
 
 ### Recommendations for Production
 
@@ -309,9 +340,9 @@ Set these in your repo: **Settings** > **Secrets and variables** > **Actions** >
 
 | Metric             | Value                                         |
 | ------------------ | --------------------------------------------- |
-| Total payload      | ~185 KB bundled (JS), ~21 KB CSS (production) |
+| Total payload      | ~185 KB bundled (JS), ~23 KB CSS (production) |
 | External resources | 3 Google Fonts requests, Supabase API calls   |
-| Build tool         | Vite (ES modules, tree-shaking)               |
+| Build tool         | Vite 7+ (ES modules, tree-shaking)            |
 
 ### Targets
 
@@ -329,7 +360,7 @@ Set these in your repo: **Settings** > **Secrets and variables** > **Actions** >
 
 | Layer       | Tool           | Scope                                                             |
 | ----------- | -------------- | ----------------------------------------------------------------- |
-| Unit        | Vitest + jsdom | Class methods, data layer functions                               |
+| Unit        | Vitest + jsdom | Store actions, service functions                                  |
 | Integration | Vitest + jsdom | Board loading, modal interactions, auth flow                      |
 | E2E         | Playwright     | Full sign-up flow, task CRUD, drag-and-drop, multi-user isolation |
 
@@ -340,20 +371,23 @@ Set these in your repo: **Settings** > **Secrets and variables** > **Actions** >
 - [ ] Sign out -> sign in with a different account -> see a separate empty board
 - [ ] Switch theme -> refresh -> theme persists
 - [ ] Drag tasks between lists and reorder lists -> refresh -> order persists
+- [ ] Open edit modal -> archive a task -> task disappears from the list
+- [ ] Toggle "Archive" in navbar -> archived column appears with the archived task
+- [ ] Open archived task's edit modal -> click "Unarchive" -> task returns to first list
+- [ ] Delete a task with 2-step confirmation -> task removed permanently
 - [ ] Supabase RLS prevents seeing other users' data via direct API calls
 
 ---
 
 ## 9. Future Considerations
 
-### Short-term (v0.3)
+### Short-term (v0.4)
 
-- [ ] Task deletion from the card modal
 - [ ] Custom list creation / renaming / deletion
 - [ ] Responsive design for mobile
-- [ ] Clean up debug `console.log` statements
+- [ ] Batch archive/delete operations
 
-### Medium-term (v0.4)
+### Medium-term (v0.5)
 
 - [ ] Optimistic UI updates for snappier feel
 - [ ] Unit and integration tests (Vitest)
