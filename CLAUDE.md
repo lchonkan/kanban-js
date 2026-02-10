@@ -32,12 +32,29 @@ git checkout -b feature/short-description
 
 ### Finishing work
 
-After the user approves, merge into develop:
+When work is ready, push the feature branch and open a PR **before** merging:
+
+```bash
+git push origin feature/short-description
+gh pr create --base develop --head feature/short-description
+```
+
+Only merge into `develop` after the user approves the PR:
 
 ```bash
 git checkout develop
 git merge --no-ff feature/short-description
 ```
+
+### Releasing to main
+
+When the user asks for a release, create a PR from `develop` to `main` first:
+
+```bash
+gh pr create --base main --head develop
+```
+
+Only merge after the user approves. Never merge directly without a PR.
 
 ## Project Structure
 
