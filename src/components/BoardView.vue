@@ -1,46 +1,48 @@
 <template>
-    <section class="board">
-        <draggable
-            :list="boardStore.lists"
-            item-key="id"
-            :animation="150"
-            handle=".tasklist-header"
-            ghost-class="list-preview"
-            drag-class="list-dragging"
-            :style="{ display: 'flex', flexDirection: 'row' }"
-            @change="onListChange"
-        >
-            <template #item="{ element }">
-                <TaskListColumn :list="element" @edit-task="openEditModal" />
-            </template>
-        </draggable>
-        <div class="add-list-wrapper">
-            <div v-if="addingList" class="add-list-form">
-                <input
-                    ref="addListInput"
-                    v-model="newListTitle"
-                    class="add-list-input"
-                    type="text"
-                    placeholder="List title…"
-                    @keydown.enter="submitNewList"
-                    @keydown.esc="cancelAddList"
-                />
-                <div class="add-list-actions">
-                    <button class="add-list-confirm-btn" @click="submitNewList">Add</button>
-                    <button class="add-list-cancel-btn" @click="cancelAddList">✕</button>
+    <div class="board-container">
+        <section class="board">
+            <draggable
+                :list="boardStore.lists"
+                item-key="id"
+                :animation="150"
+                handle=".tasklist-header"
+                ghost-class="list-preview"
+                drag-class="list-dragging"
+                :style="{ display: 'flex', flexDirection: 'row' }"
+                @change="onListChange"
+            >
+                <template #item="{ element }">
+                    <TaskListColumn :list="element" @edit-task="openEditModal" />
+                </template>
+            </draggable>
+            <div class="add-list-wrapper">
+                <div v-if="addingList" class="add-list-form">
+                    <input
+                        ref="addListInput"
+                        v-model="newListTitle"
+                        class="add-list-input"
+                        type="text"
+                        placeholder="List title…"
+                        @keydown.enter="submitNewList"
+                        @keydown.esc="cancelAddList"
+                    />
+                    <div class="add-list-actions">
+                        <button class="add-list-confirm-btn" @click="submitNewList">Add</button>
+                        <button class="add-list-cancel-btn" @click="cancelAddList">✕</button>
+                    </div>
                 </div>
+                <button v-else class="add-list-btn" @click="startAddList">+ Add list</button>
             </div>
-            <button v-else class="add-list-btn" @click="startAddList">+ Add list</button>
-        </div>
-        <div v-if="showArchivedColumn" class="archived-column">
+        </section>
+        <aside v-if="showArchivedColumn" class="archived-panel">
             <TaskListColumn
                 :list="archivedListDisplay"
                 :hide-add-task="true"
                 :readonly="true"
                 @edit-task="openEditModal"
             />
-        </div>
-    </section>
+        </aside>
+    </div>
     <TaskEditModal ref="editModal" />
 </template>
 
