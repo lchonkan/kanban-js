@@ -51,8 +51,15 @@
                             <template v-else>
                                 <span class="list-menu-confirm-label">Delete this list?</span>
                                 <div class="list-menu-confirm-actions">
-                                    <button class="list-menu-confirm-yes" @click="submitDelete">Yes, delete</button>
-                                    <button class="list-menu-confirm-no" @click="confirmingDelete = false">Cancel</button>
+                                    <button class="list-menu-confirm-yes" @click="submitDelete">
+                                        Yes, delete
+                                    </button>
+                                    <button
+                                        class="list-menu-confirm-no"
+                                        @click="confirmingDelete = false"
+                                    >
+                                        Cancel
+                                    </button>
                                 </div>
                             </template>
                         </div>

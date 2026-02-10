@@ -714,7 +714,9 @@ body {
     border-radius: 4px;
     flex-shrink: 0;
     opacity: 0;
-    transition: opacity 0.12s ease, color 0.12s ease;
+    transition:
+        opacity 0.12s ease,
+        color 0.12s ease;
     line-height: 1;
 }
 
@@ -830,7 +832,9 @@ body {
     border-radius: 4px;
     line-height: 1;
     letter-spacing: 1px;
-    transition: background-color 0.12s ease, color 0.12s ease;
+    transition:
+        background-color 0.12s ease,
+        color 0.12s ease;
 }
 
 .list-menu-btn:hover {
@@ -964,7 +968,9 @@ body {
     border-radius: 12px;
     cursor: pointer;
     opacity: 0.6;
-    transition: opacity 0.15s ease, background-color 0.15s ease;
+    transition:
+        opacity 0.15s ease,
+        background-color 0.15s ease;
     text-align: left;
 }
 
