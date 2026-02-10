@@ -737,6 +737,13 @@ class App {
                 authPage.classList.add('visible');
                 boardEl.innerHTML = '';
                 App.board.tasklists = [];
+
+                // Reset auth form state
+                document.getElementById('auth-form').reset();
+                document.getElementById('auth-error').textContent = '';
+                const submitBtn = document.getElementById('auth-submit');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Sign In';
             }
         });
     }
