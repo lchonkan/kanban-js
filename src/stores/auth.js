@@ -28,7 +28,12 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     async function signUp(email, password) {
-        await authService.signUp(email, password);
+        const data = await authService.signUp(email, password);
+        return data;
+    }
+
+    async function resendConfirmation(email) {
+        await authService.resendConfirmation(email);
     }
 
     async function signIn(email, password) {
@@ -39,5 +44,5 @@ export const useAuthStore = defineStore('auth', () => {
         await authService.signOut();
     }
 
-    return { user, ready, init, signUp, signIn, signOut };
+    return { user, ready, init, signUp, signIn, signOut, resendConfirmation };
 });

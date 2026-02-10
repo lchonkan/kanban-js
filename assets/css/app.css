@@ -366,6 +366,68 @@ body {
     text-decoration: underline;
 }
 
+.auth-confirmation {
+    text-align: center;
+    padding: 8px 0;
+}
+
+.auth-confirmation-icon {
+    font-size: 2.5rem;
+    margin-bottom: 8px;
+}
+
+.auth-confirmation h2 {
+    color: var(--auth-fg);
+    margin-bottom: 12px;
+    font-size: 1.1rem;
+}
+
+.auth-confirmation-text {
+    color: var(--auth-fg);
+    opacity: 0.85;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    font-family: sans-serif;
+}
+
+.auth-confirmation-text strong {
+    opacity: 1;
+    word-break: break-all;
+}
+
+.auth-resend-btn {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--auth-link-color);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--auth-link-color);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition:
+        background 0.15s,
+        color 0.15s;
+}
+
+.auth-resend-btn:hover {
+    background: var(--auth-link-color);
+    color: var(--auth-bg);
+}
+
+.auth-resend-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.auth-resend-msg {
+    text-align: center;
+    font-size: 0.8rem;
+    margin-top: 10px;
+    color: var(--auth-link-color);
+    font-family: sans-serif;
+}
+
 /* ══════════════════════════════════════════════════
    LOADING SPINNER
    ══════════════════════════════════════════════════ */
