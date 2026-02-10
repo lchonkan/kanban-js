@@ -48,19 +48,19 @@ src/
 ├── router.js                 Vue Router (login vs board routes, auth guard)
 ├── stores/
 │   ├── auth.js               Pinia store — auth state + actions
-│   ├── board.js              Pinia store — lists, tasks, CRUD actions
+│   ├── board.js              Pinia store — lists, tasks, archive, CRUD actions
 │   └── theme.js              Pinia store — theme state + persistence
 ├── services/
 │   ├── supabase.js           Supabase client init (env vars)
 │   ├── auth.js               Auth API calls (pure functions, no Vue dependency)
-│   └── db.js                 Data API calls (pure functions, no Vue dependency)
+│   └── db.js                 Data API calls + ARCHIVED_LIST_TITLE constant
 ├── components/
-│   ├── AppNavbar.vue         Top nav (title, settings gear, sign-out)
+│   ├── AppNavbar.vue         Top nav (title, archive toggle, settings gear, sign-out)
 │   ├── AuthForm.vue          Login/signup form with validation
-│   ├── BoardView.vue         Board container with vuedraggable for list reordering
-│   ├── TaskListColumn.vue    Single kanban column with vuedraggable for task DnD
+│   ├── BoardView.vue         Board container with vuedraggable for list reordering + archived column
+│   ├── TaskListColumn.vue    Single kanban column with vuedraggable for task DnD (supports readonly mode)
 │   ├── TaskCard.vue          Individual task card (check, title, edit btn)
-│   ├── TaskEditModal.vue     Modal for editing task title/description
+│   ├── TaskEditModal.vue     Modal for editing task title/description, archive, and delete (with confirmation)
 │   ├── ThemeSettings.vue     Theme picker overlay
 │   ├── LoadingSpinner.vue    Loading state
 │   └── ToastNotification.vue Toast messages
@@ -68,6 +68,8 @@ assets/css/
 └── app.css                   All styles including 3 color themes (CSS custom properties)
 supabase/
 └── migration.sql             Database schema, RLS policies, seed trigger
+docs/
+└── ARCHITECTURE.md           Detailed software architecture diagram
 index.html                    Vite entry point
 ```
 
@@ -85,6 +87,13 @@ index.html                    Vite entry point
 - **Services layer** (`src/services/`) contains pure JS functions that call Supabase. No Vue dependency — can be reused with any framework.
 - **Pinia stores** (`src/stores/`) hold reactive state and call services. Components read from stores.
 - **Components** (`src/components/`) are Vue SFCs. They read from stores and emit events upward.
+
+### Archive System
+
+- Archived tasks live in a special list with the sentinel title `__archived__` (constant `ARCHIVED_LIST_TITLE` in `db.js`).
+- The archived list is lazily created on first archive — no schema migration needed.
+- The board store separates the archived list from regular lists during `loadBoard`.
+- The archived column is toggled via an "Archive" button in the navbar and renders as a readonly, non-draggable column.
 
 ## Environment
 

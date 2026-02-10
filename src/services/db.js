@@ -1,5 +1,26 @@
 import { supabase } from './supabase.js';
 
+export const ARCHIVED_LIST_TITLE = '__archived__';
+
+export async function createList(title, position) {
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    const { data, error } = await supabase
+        .from('lists')
+        .insert({
+            user_id: user.id,
+            title,
+            position,
+        })
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+}
+
 export async function fetchBoard(userId) {
     const [profileRes, listsRes, tasksRes] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', userId).single(),

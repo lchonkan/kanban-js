@@ -23,6 +23,26 @@
                 ></textarea>
             </div>
             <div class="task-card-footer">
+                <div class="card-danger-actions">
+                    <template v-if="!confirmingDelete">
+                        <button v-if="isArchived" class="card-archive-btn" @click="unarchive">
+                            Unarchive
+                        </button>
+                        <button v-else class="card-archive-btn" @click="archive">Archive</button>
+                        <button class="card-delete-btn" @click="confirmingDelete = true">
+                            Delete
+                        </button>
+                    </template>
+                    <template v-else>
+                        <span class="card-confirm-label">Delete this task?</span>
+                        <button class="card-confirm-delete-btn" @click="confirmDelete">
+                            Yes, delete
+                        </button>
+                        <button class="card-cancel-delete-btn" @click="confirmingDelete = false">
+                            Cancel
+                        </button>
+                    </template>
+                </div>
                 <button class="card-save-btn" @click="save">Save</button>
             </div>
         </div>
@@ -30,7 +50,7 @@
 </template>
 
 <script setup>
-import { ref, nextTick } from 'vue';
+import { ref, nextTick, computed } from 'vue';
 import { useBoardStore } from '../stores/board.js';
 
 const boardStore = useBoardStore();
@@ -40,14 +60,22 @@ const title = ref('');
 const description = ref('');
 const listTitle = ref('');
 const taskId = ref(null);
+const currentListId = ref(null);
+const confirmingDelete = ref(false);
 
 const titleInput = ref(null);
+
+const isArchived = computed(
+    () => boardStore.archivedList && currentListId.value === boardStore.archivedList.id
+);
 
 async function open(task, parentListTitle) {
     taskId.value = task.id;
     title.value = task.title;
     description.value = task.description || '';
     listTitle.value = parentListTitle;
+    currentListId.value = task.listId;
+    confirmingDelete.value = false;
     visible.value = true;
     await nextTick();
     titleInput.value?.focus();
@@ -68,9 +96,40 @@ async function save() {
     close();
 }
 
+async function confirmDelete() {
+    if (!taskId.value) return;
+    try {
+        await boardStore.deleteTask(taskId.value);
+    } catch (err) {
+        console.error('Failed to delete task:', err);
+    }
+    close();
+}
+
+async function archive() {
+    if (!taskId.value) return;
+    try {
+        await boardStore.archiveTask(taskId.value);
+    } catch (err) {
+        console.error('Failed to archive task:', err);
+    }
+    close();
+}
+
+async function unarchive() {
+    if (!taskId.value) return;
+    try {
+        await boardStore.unarchiveTask(taskId.value);
+    } catch (err) {
+        console.error('Failed to unarchive task:', err);
+    }
+    close();
+}
+
 function close() {
     visible.value = false;
     taskId.value = null;
+    confirmingDelete.value = false;
 }
 
 defineExpose({ open });

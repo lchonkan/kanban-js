@@ -3,6 +3,14 @@
         <nav class="nav-bar">
             <span class="nav-title">KAN BAN JS</span>
             <div class="nav-actions">
+                <button
+                    class="archive-toggle-btn"
+                    :class="{ active: boardStore.showArchived }"
+                    title="Toggle archived tasks"
+                    @click="boardStore.toggleShowArchived()"
+                >
+                    Archive
+                </button>
                 <button class="settings-btn" title="Settings" @click="$emit('openSettings')">
                     ⚙
                 </button>
@@ -16,10 +24,12 @@
 
 <script setup>
 import { useAuthStore } from '../stores/auth.js';
+import { useBoardStore } from '../stores/board.js';
 
 defineEmits(['openSettings']);
 
 const authStore = useAuthStore();
+const boardStore = useBoardStore();
 
 async function handleSignOut() {
     try {
