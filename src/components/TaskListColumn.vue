@@ -33,7 +33,7 @@
                         >
                             ⋯
                         </button>
-                        <div v-if="menuOpen" class="list-menu-dropdown">
+                        <div v-if="menuOpen" class="list-menu-dropdown" @click.stop>
                             <button class="list-menu-item" @click="handleDuplicate">
                                 Duplicate list
                             </button>
