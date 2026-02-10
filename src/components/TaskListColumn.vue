@@ -1,7 +1,18 @@
 <template>
-    <div class="tasklist-wrapper">
-        <div class="tasklist" :data-list-id="list.id">
+    <div class="tasklist-wrapper" :class="{ 'tasklist-collapsed': collapsed }">
+        <div v-if="collapsed" class="tasklist-collapsed-bar" @click="collapsed = false">
+            <span class="tasklist-collapsed-title">{{ list.title }}</span>
+            <span class="tasklist-collapsed-count">{{ list.tasks.length }}</span>
+        </div>
+        <div v-else class="tasklist" :data-list-id="list.id">
             <div class="tasklist-header">
+                <button
+                    class="list-collapse-btn"
+                    title="Collapse list"
+                    @click="collapsed = true"
+                >
+                    ◀
+                </button>
                 <input
                     v-if="editing"
                     ref="renameInput"
@@ -79,6 +90,7 @@ const editing = ref(false);
 const editTitle = ref('');
 const renameInput = ref(null);
 const confirmingDelete = ref(false);
+const collapsed = ref(false);
 
 async function startRename() {
     if (props.readonly) return;
