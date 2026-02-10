@@ -14,11 +14,11 @@ feature/*       individual feature or fix branches
 
 ### Branches
 
-| Branch       | Purpose                                        |
-|--------------|-------------------------------------------------|
-| `main`     | Stable, production-ready code. Deploys via CI.  |
-| `develop`    | Integration branch. All features merge here first. |
-| `feature/*`  | Short-lived branches for individual features or fixes. |
+| Branch      | Purpose                                                |
+| ----------- | ------------------------------------------------------ |
+| `main`      | Stable, production-ready code. Deploys via CI.         |
+| `develop`   | Integration branch. All features merge here first.     |
+| `feature/*` | Short-lived branches for individual features or fixes. |
 
 ## Workflow
 

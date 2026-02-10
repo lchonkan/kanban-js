@@ -1,8 +1,5 @@
-import { supabase } from './config.js';
+import { supabase } from './supabase.js';
 
-/**
- * Fetch the full board for the current user: profile, lists, and tasks.
- */
 export async function fetchBoard(userId) {
     const [profileRes, listsRes, tasksRes] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', userId).single(),
@@ -21,9 +18,6 @@ export async function fetchBoard(userId) {
     };
 }
 
-/**
- * Create a new task in a list.
- */
 export async function createTask(listId, title, position) {
     const {
         data: { user },
@@ -44,9 +38,6 @@ export async function createTask(listId, title, position) {
     return data;
 }
 
-/**
- * Update a task's fields (title, description, completed, list_id, position).
- */
 export async function updateTask(taskId, fields) {
     const { data, error } = await supabase
         .from('tasks')
@@ -59,19 +50,11 @@ export async function updateTask(taskId, fields) {
     return data;
 }
 
-/**
- * Delete a task by ID.
- */
 export async function deleteTask(taskId) {
     const { error } = await supabase.from('tasks').delete().eq('id', taskId);
     if (error) throw error;
 }
 
-/**
- * Batch-update task positions within a list.
- * @param {string} listId
- * @param {{ id: string, position: number }[]} taskPositions
- */
 export async function reorderTasks(listId, taskPositions) {
     const updates = taskPositions.map(({ id, position }) =>
         supabase.from('tasks').update({ position, list_id: listId }).eq('id', id)
@@ -83,10 +66,6 @@ export async function reorderTasks(listId, taskPositions) {
     }
 }
 
-/**
- * Batch-update list positions.
- * @param {{ id: string, position: number }[]} listPositions
- */
 export async function reorderLists(listPositions) {
     const updates = listPositions.map(({ id, position }) =>
         supabase.from('lists').update({ position }).eq('id', id)
@@ -98,9 +77,6 @@ export async function reorderLists(listPositions) {
     }
 }
 
-/**
- * Update the user's theme preference.
- */
 export async function updateTheme(theme) {
     const {
         data: { user },

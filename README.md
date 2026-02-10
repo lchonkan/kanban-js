@@ -48,16 +48,16 @@ Vite will start a dev server at `http://localhost:5173` with hot module replacem
 
 ### Available Scripts
 
-| Script               | Description                              |
-| -------------------- | ---------------------------------------- |
-| `npm run dev`        | Start Vite dev server with HMR           |
-| `npm run build`      | Production build to `dist/`              |
-| `npm run preview`    | Preview the production build locally     |
-| `npm run lint`       | Check for lint errors (ESLint)           |
-| `npm run lint:fix`   | Auto-fix lint errors                     |
-| `npm run format`     | Format all files (Prettier)              |
-| `npm run format:check` | Verify formatting                      |
-| `npm run validate`   | Run both lint + format check             |
+| Script                 | Description                          |
+| ---------------------- | ------------------------------------ |
+| `npm run dev`          | Start Vite dev server with HMR       |
+| `npm run build`        | Production build to `dist/`          |
+| `npm run preview`      | Preview the production build locally |
+| `npm run lint`         | Check for lint errors (ESLint)       |
+| `npm run lint:fix`     | Auto-fix lint errors                 |
+| `npm run format`       | Format all files (Prettier)          |
+| `npm run format:check` | Verify formatting                    |
+| `npm run validate`     | Run both lint + format check         |
 
 ---
 
@@ -77,6 +77,7 @@ Vite will start a dev server at `http://localhost:5173` with hot module replacem
 4. Click **Run** to execute the migration
 
 This creates:
+
 - `profiles` table -- stores per-user theme preference
 - `lists` table -- kanban columns with position ordering
 - `tasks` table -- task cards with title, description, completed status, and position
@@ -102,6 +103,7 @@ cp .env.example .env
 ```
 
 Edit `.env`:
+
 ```
 VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_API_KEY=your-publishable-api-key-here
@@ -137,15 +139,15 @@ App (static entry point)
            └── Task[]        (individual task items)
 ```
 
-| Class            | Responsibility                                                                                              |
-| ---------------- | ----------------------------------------------------------------------------------------------------------- |
-| `App`            | Entry point -- initializes UI, listens for auth state changes, loads/clears board                           |
-| `AuthUI`         | Handles login/signup form with client-side validation, toggles between sign-in and create-account modes     |
-| `ThemeManager`   | Applies themes (`dark`, `light`, `awesome`); persists to Supabase `profiles` table with localStorage cache |
-| `TaskCardModal`  | Modal for editing task title and description; saves changes to Supabase                                     |
-| `Board`          | Renders board, loads lists/tasks from Supabase, manages drag-and-drop with position persistence             |
-| `TaskList`       | Renders a column, manages its `tasks[]` array, creates new tasks via Supabase                               |
-| `Task`           | Data object: `id`, `title`, `description`, `completed`, `listId`, `position`                                |
+| Class           | Responsibility                                                                                             |
+| --------------- | ---------------------------------------------------------------------------------------------------------- |
+| `App`           | Entry point -- initializes UI, listens for auth state changes, loads/clears board                          |
+| `AuthUI`        | Handles login/signup form with client-side validation, toggles between sign-in and create-account modes    |
+| `ThemeManager`  | Applies themes (`dark`, `light`, `awesome`); persists to Supabase `profiles` table with localStorage cache |
+| `TaskCardModal` | Modal for editing task title and description; saves changes to Supabase                                    |
+| `Board`         | Renders board, loads lists/tasks from Supabase, manages drag-and-drop with position persistence            |
+| `TaskList`      | Renders a column, manages its `tasks[]` array, creates new tasks via Supabase                              |
+| `Task`          | Data object: `id`, `title`, `description`, `completed`, `listId`, `position`                               |
 
 ### Data Flow
 
@@ -237,6 +239,7 @@ All tables have Row-Level Security enabled. Every policy is scoped to `auth.uid(
 ### Auto-Seed Trigger
 
 When a new user signs up, a database trigger:
+
 1. Creates a row in `profiles` with default theme `'dark'`
 2. Inserts 3 default lists: Pendientes (pos 0), En Proceso (pos 1), Finalizadas (pos 2)
 
@@ -292,6 +295,7 @@ Triggers on push to `main`:
 3. Deploy via `actions/deploy-pages@v4`
 
 **Required GitHub Secrets:**
+
 - `VITE_SUPABASE_URL` -- your Supabase project URL
 - `VITE_SUPABASE_API_KEY` -- your Supabase publishable API key
 
@@ -303,19 +307,19 @@ Set these in your repo: **Settings** > **Secrets and variables** > **Actions** >
 
 ### Current Profile
 
-| Metric             | Value                                          |
-| ------------------ | ---------------------------------------------- |
-| Total payload      | ~185 KB bundled (JS), ~21 KB CSS (production)  |
-| External resources | 3 Google Fonts requests, Supabase API calls    |
-| Build tool         | Vite (ES modules, tree-shaking)                |
+| Metric             | Value                                         |
+| ------------------ | --------------------------------------------- |
+| Total payload      | ~185 KB bundled (JS), ~21 KB CSS (production) |
+| External resources | 3 Google Fonts requests, Supabase API calls   |
+| Build tool         | Vite (ES modules, tree-shaking)               |
 
 ### Targets
 
-| Metric                   | Target    | Notes                                          |
-| ------------------------ | --------- | ---------------------------------------------- |
-| First Contentful Paint   | < 800ms   | Theme loads from localStorage cache instantly   |
-| Drag-and-drop frame rate | 60 fps    | No heavy reflows during drag                   |
-| Task count support       | 100+ per list | May need virtual scrolling above ~200 tasks |
+| Metric                   | Target        | Notes                                         |
+| ------------------------ | ------------- | --------------------------------------------- |
+| First Contentful Paint   | < 800ms       | Theme loads from localStorage cache instantly |
+| Drag-and-drop frame rate | 60 fps        | No heavy reflows during drag                  |
+| Task count support       | 100+ per list | May need virtual scrolling above ~200 tasks   |
 
 ---
 
@@ -323,11 +327,11 @@ Set these in your repo: **Settings** > **Secrets and variables** > **Actions** >
 
 ### Planned Strategy
 
-| Layer       | Tool           | Scope                                                              |
-| ----------- | -------------- | ------------------------------------------------------------------ |
-| Unit        | Vitest + jsdom | Class methods, data layer functions                                |
-| Integration | Vitest + jsdom | Board loading, modal interactions, auth flow                       |
-| E2E         | Playwright     | Full sign-up flow, task CRUD, drag-and-drop, multi-user isolation  |
+| Layer       | Tool           | Scope                                                             |
+| ----------- | -------------- | ----------------------------------------------------------------- |
+| Unit        | Vitest + jsdom | Class methods, data layer functions                               |
+| Integration | Vitest + jsdom | Board loading, modal interactions, auth flow                      |
+| E2E         | Playwright     | Full sign-up flow, task CRUD, drag-and-drop, multi-user isolation |
 
 ### Verification Checklist
 

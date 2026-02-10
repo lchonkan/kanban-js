@@ -238,22 +238,6 @@ body {
    AUTH PAGE
    ══════════════════════════════════════════════════ */
 
-#auth-page {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 200;
-    background-color: var(--auth-bg);
-    overflow-y: auto;
-}
-
-#auth-page.visible {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    animation: fade-in 0.25s ease-out forwards;
-}
-
 .auth-container {
     width: 100%;
     max-width: 380px;
@@ -281,12 +265,6 @@ body {
     font-size: 1.2rem;
     color: var(--settings-heading);
     margin: 0 0 20px 0;
-}
-
-#auth-form {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
 }
 
 .auth-field {
@@ -371,22 +349,6 @@ body {
    LOADING SPINNER
    ══════════════════════════════════════════════════ */
 
-#loading-spinner {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 150;
-    background-color: var(--board-bg);
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-}
-
-#loading-spinner.visible {
-    display: flex;
-}
-
 .spinner {
     width: 36px;
     height: 36px;
@@ -413,14 +375,10 @@ body {
    BOARD PAGE
    ══════════════════════════════════════════════════ */
 
-#board-page {
-    display: none;
+.board-page {
+    display: flex;
     flex-direction: column;
     height: 100%;
-}
-
-#board-page.visible {
-    display: flex;
 }
 
 /* ══════════════════════════════════════════════════
@@ -484,20 +442,6 @@ body {
 }
 
 /* ── Settings Page ── */
-
-#settings-page {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 50;
-    background-color: var(--settings-bg);
-    overflow-y: auto;
-}
-
-#settings-page.visible {
-    display: block;
-    animation: fade-in 0.2s ease-out forwards;
-}
 
 @keyframes fade-in {
     from {
@@ -923,24 +867,7 @@ body {
 
 /* ── Task Card Modal ── */
 
-#task-card-modal {
-    display: none;
-    position: fixed;
-    z-index: 100;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-}
-
-#task-card-modal.visible {
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    padding-top: 12vh;
-}
-
-#task-card-modal .card-backdrop {
+.task-card-modal .card-backdrop {
     position: absolute;
     inset: 0;
     background: var(--backdrop-bg);
@@ -1109,18 +1036,8 @@ body {
     padding: 10px 16px;
     border-radius: 8px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-    opacity: 0;
-    transform: translateY(8px);
-    transition:
-        opacity 0.25s ease,
-        transform 0.25s ease;
     pointer-events: auto;
     max-width: 340px;
-}
-
-.toast.toast-visible {
-    opacity: 1;
-    transform: translateY(0);
 }
 
 .toast-error {
