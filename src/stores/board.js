@@ -57,62 +57,127 @@ export const useBoardStore = defineStore('board', () => {
         if (!list) return;
 
         const position = list.tasks.length;
-        const record = await db.createTask(listId, title, position);
+        const tempId = 'temp-' + Date.now();
+        const tempTask = {
+            id: tempId,
+            listId,
+            title,
+            description: '',
+            completed: false,
+            position,
+        };
+        list.tasks.push(tempTask);
 
-        list.tasks.push(mapTask(record));
+        try {
+            const record = await db.createTask(listId, title, position);
+            const mapped = mapTask(record);
+            const idx = list.tasks.findIndex((t) => t.id === tempId);
+            if (idx !== -1) {
+                Object.assign(list.tasks[idx], mapped);
+            }
+        } catch (err) {
+            const idx = list.tasks.findIndex((t) => t.id === tempId);
+            if (idx !== -1) {
+                list.tasks.splice(idx, 1);
+            }
+            throw err;
+        }
     }
 
     async function updateTask(taskId, fields) {
-        await db.updateTask(taskId, fields);
-
         const allLists = archivedList.value ? [...lists.value, archivedList.value] : lists.value;
+        let task = null;
         for (const list of allLists) {
-            const task = list.tasks.find((t) => t.id === taskId);
-            if (task) {
-                Object.assign(task, fields);
-                break;
-            }
+            task = list.tasks.find((t) => t.id === taskId);
+            if (task) break;
+        }
+        if (!task) return;
+
+        const snapshot = {};
+        for (const key of Object.keys(fields)) {
+            snapshot[key] = task[key];
+        }
+        Object.assign(task, fields);
+
+        try {
+            await db.updateTask(taskId, fields);
+        } catch (err) {
+            Object.assign(task, snapshot);
+            throw err;
         }
     }
 
     async function deleteTask(taskId) {
-        await db.deleteTask(taskId);
-
         const allLists = archivedList.value ? [...lists.value, archivedList.value] : lists.value;
+        let sourceList = null;
+        let sourceIdx = -1;
+        let removedTask = null;
+
         for (const list of allLists) {
             const idx = list.tasks.findIndex((t) => t.id === taskId);
             if (idx !== -1) {
-                list.tasks.splice(idx, 1);
+                sourceList = list;
+                sourceIdx = idx;
+                [removedTask] = list.tasks.splice(idx, 1);
                 break;
             }
+        }
+        if (!removedTask) return;
+
+        try {
+            await db.deleteTask(taskId);
+        } catch (err) {
+            sourceList.tasks.splice(sourceIdx, 0, removedTask);
+            throw err;
         }
     }
 
     async function archiveTask(taskId) {
-        // Lazy-create archived list if it doesn't exist
+        // Lazy-create archived list if it doesn't exist (needs real DB ID)
         if (!archivedList.value) {
             const maxPos = lists.value.reduce((m, l) => Math.max(m, l.position ?? 0), 0);
             const record = await db.createList(ARCHIVED_LIST_TITLE, maxPos + 1000);
             archivedList.value = { ...record, tasks: [] };
         }
 
-        // Move task in DB
-        const position = archivedList.value.tasks.length;
-        await db.updateTask(taskId, {
-            list_id: archivedList.value.id,
-            position,
-        });
+        // Find and move task optimistically
+        let sourceList = null;
+        let sourceIdx = -1;
+        let task = null;
 
-        // Move task in local state
         for (const list of lists.value) {
             const idx = list.tasks.findIndex((t) => t.id === taskId);
             if (idx !== -1) {
-                const [task] = list.tasks.splice(idx, 1);
-                task.listId = archivedList.value.id;
-                task.position = position;
-                archivedList.value.tasks.push(task);
+                sourceList = list;
+                sourceIdx = idx;
+                [task] = list.tasks.splice(idx, 1);
                 break;
             }
+        }
+        if (!task) return;
+
+        const prevListId = task.listId;
+        const prevPosition = task.position;
+        const position = archivedList.value.tasks.length;
+        task.listId = archivedList.value.id;
+        task.position = position;
+        archivedList.value.tasks.push(task);
+
+        try {
+            await db.updateTask(taskId, {
+                list_id: archivedList.value.id,
+                position,
+            });
+        } catch (err) {
+            // Rollback: remove from archived, restore to source
+            const archIdx = archivedList.value.tasks.findIndex((t) => t.id === taskId);
+            if (archIdx !== -1) {
+                archivedList.value.tasks.splice(archIdx, 1);
+            }
+            task.listId = prevListId;
+            task.position = prevPosition;
+            sourceList.tasks.splice(sourceIdx, 0, task);
+            throw err;
         }
     }
 
@@ -120,18 +185,32 @@ export const useBoardStore = defineStore('board', () => {
         const target = lists.value.find((l) => l.id === targetListId) || lists.value[0];
         if (!target || !archivedList.value) return;
 
-        const position = target.tasks.length;
-        await db.updateTask(taskId, {
-            list_id: target.id,
-            position,
-        });
-
         const idx = archivedList.value.tasks.findIndex((t) => t.id === taskId);
-        if (idx !== -1) {
-            const [task] = archivedList.value.tasks.splice(idx, 1);
-            task.listId = target.id;
-            task.position = position;
-            target.tasks.push(task);
+        if (idx === -1) return;
+
+        const [task] = archivedList.value.tasks.splice(idx, 1);
+        const prevListId = task.listId;
+        const prevPosition = task.position;
+        const position = target.tasks.length;
+        task.listId = target.id;
+        task.position = position;
+        target.tasks.push(task);
+
+        try {
+            await db.updateTask(taskId, {
+                list_id: target.id,
+                position,
+            });
+        } catch (err) {
+            // Rollback: remove from target, restore to archived
+            const targetIdx = target.tasks.findIndex((t) => t.id === taskId);
+            if (targetIdx !== -1) {
+                target.tasks.splice(targetIdx, 1);
+            }
+            task.listId = prevListId;
+            task.position = prevPosition;
+            archivedList.value.tasks.splice(idx, 0, task);
+            throw err;
         }
     }
 
