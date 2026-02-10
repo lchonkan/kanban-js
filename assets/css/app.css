@@ -61,6 +61,7 @@
     --card-list-label: hsla(220, 15%, 55%, 1);
     --auth-bg: hsla(225, 20%, 8%, 1);
     --auth-card-bg: hsla(225, 15%, 13%, 0.95);
+    --auth-fg: hsla(220, 15%, 88%, 1);
     --auth-input-bg: hsla(225, 20%, 18%, 0.9);
     --auth-input-border: hsla(220, 30%, 30%, 0.4);
     --auth-input-text: hsla(220, 15%, 90%, 1);
@@ -137,6 +138,7 @@
     --card-list-label: hsla(220, 15%, 50%, 1);
     --auth-bg: hsla(220, 20%, 93%, 1);
     --auth-card-bg: hsla(0, 0%, 100%, 0.97);
+    --auth-fg: hsla(225, 20%, 20%, 1);
     --auth-input-bg: hsla(0, 0%, 100%, 0.95);
     --auth-input-border: hsla(220, 15%, 80%, 0.6);
     --auth-input-text: hsla(225, 20%, 20%, 1);
@@ -213,6 +215,7 @@
     --card-list-label: hsla(280, 40%, 55%, 1);
     --auth-bg: hsla(270, 50%, 6%, 1);
     --auth-card-bg: hsla(275, 40%, 10%, 0.97);
+    --auth-fg: hsla(195, 100%, 85%, 1);
     --auth-input-bg: hsla(270, 35%, 15%, 0.92);
     --auth-input-border: hsla(320, 60%, 40%, 0.4);
     --auth-input-text: hsla(195, 100%, 80%, 1);
@@ -368,30 +371,31 @@ body {
 
 .auth-confirmation {
     text-align: center;
-    padding: 8px 0;
+    padding: 12px 0;
 }
 
 .auth-confirmation-icon {
     font-size: 2.5rem;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
 }
 
 .auth-confirmation h2 {
     color: var(--auth-fg);
-    margin-bottom: 12px;
-    font-size: 1.1rem;
+    margin-bottom: 14px;
+    font-size: 1.15rem;
 }
 
 .auth-confirmation-text {
     color: var(--auth-fg);
-    opacity: 0.85;
-    font-size: 0.85rem;
-    line-height: 1.5;
-    margin-bottom: 20px;
+    opacity: 0.8;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    margin-bottom: 24px;
     font-family: sans-serif;
 }
 
 .auth-confirmation-text strong {
+    color: var(--auth-link-color);
     opacity: 1;
     word-break: break-all;
 }
