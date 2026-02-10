@@ -14,6 +14,24 @@
                 <TaskListColumn :list="element" @edit-task="openEditModal" />
             </template>
         </draggable>
+        <div class="add-list-wrapper">
+            <div v-if="addingList" class="add-list-form">
+                <input
+                    ref="addListInput"
+                    v-model="newListTitle"
+                    class="add-list-input"
+                    type="text"
+                    placeholder="List title…"
+                    @keydown.enter="submitNewList"
+                    @keydown.esc="cancelAddList"
+                />
+                <div class="add-list-actions">
+                    <button class="add-list-confirm-btn" @click="submitNewList">Add</button>
+                    <button class="add-list-cancel-btn" @click="cancelAddList">✕</button>
+                </div>
+            </div>
+            <button v-else class="add-list-btn" @click="startAddList">+ Add list</button>
+        </div>
         <div v-if="showArchivedColumn" class="archived-column">
             <TaskListColumn
                 :list="archivedListDisplay"
@@ -27,7 +45,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, nextTick } from 'vue';
 import draggable from 'vuedraggable';
 import TaskListColumn from './TaskListColumn.vue';
 import TaskEditModal from './TaskEditModal.vue';
@@ -36,6 +54,9 @@ import * as db from '../services/db.js';
 
 const boardStore = useBoardStore();
 const editModal = ref(null);
+const addingList = ref(false);
+const newListTitle = ref('');
+const addListInput = ref(null);
 
 const showArchivedColumn = computed(
     () =>
@@ -59,6 +80,31 @@ function openEditModal(task) {
     const list = allLists.find((l) => l.tasks.some((t) => t.id === task.id));
     const displayTitle = list?.title === '__archived__' ? 'Archived' : list?.title || '';
     editModal.value?.open(task, displayTitle);
+}
+
+async function startAddList() {
+    addingList.value = true;
+    await nextTick();
+    addListInput.value?.focus();
+}
+
+async function submitNewList() {
+    const title = newListTitle.value.trim();
+    if (!title) return;
+
+    newListTitle.value = '';
+    addingList.value = false;
+
+    try {
+        await boardStore.addList(title);
+    } catch (err) {
+        console.error('Failed to create list:', err);
+    }
+}
+
+function cancelAddList() {
+    newListTitle.value = '';
+    addingList.value = false;
 }
 
 async function onListChange() {

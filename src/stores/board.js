@@ -272,6 +272,57 @@ export const useBoardStore = defineStore('board', () => {
         await db.reorderLists(positions);
     }
 
+    async function addList(title) {
+        const maxPos = lists.value.reduce((m, l) => Math.max(m, l.position ?? 0), 0);
+        const position = maxPos + 1;
+        const tempId = 'temp-list-' + Date.now();
+        const tempList = { id: tempId, title, position, tasks: [] };
+        lists.value.push(tempList);
+
+        try {
+            const record = await db.createList(title, position);
+            const idx = lists.value.findIndex((l) => l.id === tempId);
+            if (idx !== -1) {
+                Object.assign(lists.value[idx], { ...record, tasks: [] });
+            }
+        } catch (err) {
+            const idx = lists.value.findIndex((l) => l.id === tempId);
+            if (idx !== -1) {
+                lists.value.splice(idx, 1);
+            }
+            throw err;
+        }
+    }
+
+    async function renameList(listId, title) {
+        const list = lists.value.find((l) => l.id === listId);
+        if (!list) return;
+
+        const prevTitle = list.title;
+        list.title = title;
+
+        try {
+            await db.renameList(listId, title);
+        } catch (err) {
+            list.title = prevTitle;
+            throw err;
+        }
+    }
+
+    async function deleteList(listId) {
+        const idx = lists.value.findIndex((l) => l.id === listId);
+        if (idx === -1) return;
+
+        const [removed] = lists.value.splice(idx, 1);
+
+        try {
+            await db.deleteList(listId);
+        } catch (err) {
+            lists.value.splice(idx, 0, removed);
+            throw err;
+        }
+    }
+
     return {
         lists,
         archivedList,
@@ -289,5 +340,8 @@ export const useBoardStore = defineStore('board', () => {
         reorderTasksInList,
         moveTask,
         reorderLists,
+        addList,
+        renameList,
+        deleteList,
     };
 });

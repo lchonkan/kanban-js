@@ -2,7 +2,31 @@
     <div class="tasklist-wrapper">
         <div class="tasklist" :data-list-id="list.id">
             <div class="tasklist-header">
-                <p class="tasklist-name">{{ list.title }}</p>
+                <input
+                    v-if="editing"
+                    ref="renameInput"
+                    v-model="editTitle"
+                    class="tasklist-rename-input"
+                    type="text"
+                    @keydown.enter="submitRename"
+                    @keydown.esc="cancelRename"
+                    @blur="submitRename"
+                />
+                <p v-else class="tasklist-name" @dblclick="startRename">{{ list.title }}</p>
+                <div v-if="!readonly" class="tasklist-header-actions">
+                    <button
+                        v-if="!confirmingDelete"
+                        class="list-delete-btn"
+                        title="Delete list"
+                        @click="confirmingDelete = true"
+                    >
+                        ✕
+                    </button>
+                    <template v-else>
+                        <button class="list-confirm-delete-btn" title="Confirm delete" @click="submitDelete">✓</button>
+                        <button class="list-cancel-delete-btn" title="Cancel" @click="confirmingDelete = false">✕</button>
+                    </template>
+                </div>
             </div>
             <draggable
                 :list="list.tasks"
@@ -34,7 +58,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, nextTick } from 'vue';
 import draggable from 'vuedraggable';
 import TaskCard from './TaskCard.vue';
 import { useBoardStore } from '../stores/board.js';
@@ -51,6 +75,44 @@ defineEmits(['editTask']);
 const boardStore = useBoardStore();
 const newTaskTitle = ref('');
 const newTaskInput = ref(null);
+const editing = ref(false);
+const editTitle = ref('');
+const renameInput = ref(null);
+const confirmingDelete = ref(false);
+
+async function startRename() {
+    if (props.readonly) return;
+    editTitle.value = props.list.title;
+    editing.value = true;
+    await nextTick();
+    renameInput.value?.focus();
+    renameInput.value?.select();
+}
+
+async function submitRename() {
+    const title = editTitle.value.trim();
+    editing.value = false;
+    if (!title || title === props.list.title) return;
+
+    try {
+        await boardStore.renameList(props.list.id, title);
+    } catch (err) {
+        console.error('Failed to rename list:', err);
+    }
+}
+
+function cancelRename() {
+    editing.value = false;
+}
+
+async function submitDelete() {
+    confirmingDelete.value = false;
+    try {
+        await boardStore.deleteList(props.list.id);
+    } catch (err) {
+        console.error('Failed to delete list:', err);
+    }
+}
 
 async function submitNewTask() {
     const title = newTaskTitle.value.trim();

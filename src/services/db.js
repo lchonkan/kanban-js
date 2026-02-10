@@ -98,6 +98,27 @@ export async function reorderLists(listPositions) {
     }
 }
 
+export async function renameList(listId, title) {
+    const { data, error } = await supabase
+        .from('lists')
+        .update({ title })
+        .eq('id', listId)
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+}
+
+export async function deleteList(listId) {
+    // Delete all tasks in the list first, then the list itself
+    const { error: tasksError } = await supabase.from('tasks').delete().eq('list_id', listId);
+    if (tasksError) throw tasksError;
+
+    const { error } = await supabase.from('lists').delete().eq('id', listId);
+    if (error) throw error;
+}
+
 export async function updateTheme(theme) {
     const {
         data: { user },
