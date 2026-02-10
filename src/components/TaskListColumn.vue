@@ -25,7 +25,6 @@
                     class="add-task-input"
                     type="text"
                     placeholder="New task…"
-                    :disabled="addingTask"
                     @keydown.enter="submitNewTask"
                 />
                 <button class="add-task-btn" title="Add task" @click="submitNewTask">+</button>
@@ -51,22 +50,20 @@ defineEmits(['editTask']);
 
 const boardStore = useBoardStore();
 const newTaskTitle = ref('');
-const addingTask = ref(false);
 const newTaskInput = ref(null);
 
 async function submitNewTask() {
     const title = newTaskTitle.value.trim();
     if (!title) return;
 
-    addingTask.value = true;
+    // Clear input and re-focus immediately so the user can keep typing
+    newTaskTitle.value = '';
+    newTaskInput.value?.focus();
+
     try {
         await boardStore.addTask(props.list.id, title);
-        newTaskTitle.value = '';
     } catch (err) {
         console.error('Failed to create task:', err);
-    } finally {
-        addingTask.value = false;
-        newTaskInput.value?.focus();
     }
 }
 
