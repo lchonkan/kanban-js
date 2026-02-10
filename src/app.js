@@ -700,24 +700,32 @@ class App {
         document.getElementById('app').appendChild(boardEl);
         App.board = new Board(boardEl);
 
-        onAuthStateChange(async (event, session) => {
-            console.info('Auth event:', event);
+        let loadingBoard = false;
 
+        onAuthStateChange((event, session) => {
             if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
                 const user = getUser(session);
                 if (user) {
+                    if (loadingBoard) return;
+                    loadingBoard = true;
+
                     authPage.classList.remove('visible');
                     boardPage.classList.add('visible');
                     loadingEl.classList.add('visible');
 
-                    try {
-                        await App.board.loadBoard(user.id);
-                    } catch (err) {
-                        console.error('Failed to load board:', err);
-                        showToast('Failed to load your board. Please refresh.');
-                    } finally {
-                        loadingEl.classList.remove('visible');
-                    }
+                    // Use setTimeout to break out of the auth callback,
+                    // avoiding a deadlock with the Supabase client's internal auth lock.
+                    setTimeout(async () => {
+                        try {
+                            await App.board.loadBoard(user.id);
+                        } catch (err) {
+                            console.error('Failed to load board:', err);
+                            showToast('Failed to load your board. Please refresh.');
+                        } finally {
+                            loadingEl.classList.remove('visible');
+                            loadingBoard = false;
+                        }
+                    }, 0);
                 } else if (event === 'INITIAL_SESSION') {
                     authPage.classList.add('visible');
                     boardPage.classList.remove('visible');
