@@ -7,7 +7,7 @@ Instructions for Claude Code when working on this project.
 This project uses Git Flow. Always follow this branching model:
 
 ```
-main          production-ready, deploys to GitHub Pages
+main          production-ready
   |
 develop       integration branch, all features merge here first
   |
@@ -97,7 +97,6 @@ index.html                    Vite entry point
 - **Backend:** Supabase (Postgres + Auth + Row-Level Security)
 - **CSS:** Custom properties for 3 themes (dark, light, awesome)
 - **CI:** ESLint (with eslint-plugin-vue) + Prettier + Vite build check
-- **Deploy:** Vite build -> GitHub Pages
 
 ## Architecture
 
