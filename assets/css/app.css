@@ -814,43 +814,121 @@ body {
     opacity: 1;
 }
 
-.list-delete-btn,
-.list-confirm-delete-btn,
-.list-cancel-delete-btn {
+/* ── List Menu ── */
+
+.list-menu-container {
+    position: relative;
+}
+
+.list-menu-btn {
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 0.75rem;
+    color: var(--task-edit-color);
+    font-size: 1.1rem;
     padding: 2px 6px;
     border-radius: 4px;
-    transition: background-color 0.12s ease, color 0.12s ease;
     line-height: 1;
+    letter-spacing: 1px;
+    transition: background-color 0.12s ease, color 0.12s ease;
 }
 
-.list-delete-btn {
-    color: var(--task-edit-color);
-}
-
-.list-delete-btn:hover {
-    color: var(--card-confirm-label-color);
+.list-menu-btn:hover {
+    color: var(--task-edit-hover-color);
     background-color: rgba(128, 128, 128, 0.2);
 }
 
-.list-confirm-delete-btn {
+.list-menu-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 50;
+    min-width: 170px;
+    background-color: var(--modal-bg);
+    border-radius: 8px;
+    box-shadow: 0 6px 24px var(--modal-shadow);
+    padding: 6px 0;
+    animation: fade-slide-in 0.15s ease-out forwards;
+}
+
+.list-menu-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    font-family: sans-serif;
+    font-size: 0.8rem;
+    color: var(--list-text);
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: background-color 0.1s ease;
+}
+
+.list-menu-item:hover {
+    background-color: var(--btn-bg);
+}
+
+.list-menu-item-danger {
     color: var(--card-confirm-label-color);
 }
 
-.list-confirm-delete-btn:hover {
+.list-menu-item-danger:hover {
     background-color: var(--card-delete-bg);
     color: white;
 }
 
-.list-cancel-delete-btn {
-    color: var(--task-edit-color);
+.list-menu-divider {
+    border: none;
+    border-top: 1px solid var(--inline-input-border);
+    margin: 4px 0;
 }
 
-.list-cancel-delete-btn:hover {
-    background-color: rgba(128, 128, 128, 0.2);
+.list-menu-confirm-label {
+    display: block;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--card-confirm-label-color);
+    padding: 6px 14px 2px;
+    font-weight: bold;
+}
+
+.list-menu-confirm-actions {
+    display: flex;
+    gap: 6px;
+    padding: 4px 14px 6px;
+}
+
+.list-menu-confirm-yes {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    padding: 4px 10px;
+    border: none;
+    border-radius: 6px;
+    background-color: var(--card-delete-bg);
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+
+.list-menu-confirm-yes:hover {
+    background-color: var(--card-delete-hover-bg);
+}
+
+.list-menu-confirm-no {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    padding: 4px 10px;
+    border: none;
+    border-radius: 6px;
+    background-color: var(--btn-bg);
+    color: var(--btn-text);
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+
+.list-menu-confirm-no:hover {
+    background-color: var(--btn-hover-bg);
 }
 
 .tasklist-rename-input {

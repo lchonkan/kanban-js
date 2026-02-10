@@ -6,13 +6,6 @@
         </div>
         <div v-else class="tasklist" :data-list-id="list.id">
             <div class="tasklist-header">
-                <button
-                    class="list-collapse-btn"
-                    title="Collapse list"
-                    @click="collapsed = true"
-                >
-                    ◀
-                </button>
                 <input
                     v-if="editing"
                     ref="renameInput"
@@ -26,17 +19,44 @@
                 <p v-else class="tasklist-name" @dblclick="startRename">{{ list.title }}</p>
                 <div v-if="!readonly" class="tasklist-header-actions">
                     <button
-                        v-if="!confirmingDelete"
-                        class="list-delete-btn"
-                        title="Delete list"
-                        @click="confirmingDelete = true"
+                        class="list-collapse-btn"
+                        title="Collapse list"
+                        @click="collapsed = true"
                     >
-                        ✕
+                        ➤‹
                     </button>
-                    <template v-else>
-                        <button class="list-confirm-delete-btn" title="Confirm delete" @click="submitDelete">✓</button>
-                        <button class="list-cancel-delete-btn" title="Cancel" @click="confirmingDelete = false">✕</button>
-                    </template>
+                    <div class="list-menu-container">
+                        <button
+                            class="list-menu-btn"
+                            title="List actions"
+                            @click="menuOpen = !menuOpen"
+                        >
+                            ⋯
+                        </button>
+                        <div v-if="menuOpen" class="list-menu-dropdown">
+                            <button class="list-menu-item" @click="handleDuplicate">
+                                Duplicate list
+                            </button>
+                            <button class="list-menu-item" @click="handleArchiveList">
+                                Archive list
+                            </button>
+                            <hr class="list-menu-divider" />
+                            <button
+                                v-if="!confirmingDelete"
+                                class="list-menu-item list-menu-item-danger"
+                                @click="confirmingDelete = true"
+                            >
+                                Delete list
+                            </button>
+                            <template v-else>
+                                <span class="list-menu-confirm-label">Delete this list?</span>
+                                <div class="list-menu-confirm-actions">
+                                    <button class="list-menu-confirm-yes" @click="submitDelete">Yes, delete</button>
+                                    <button class="list-menu-confirm-no" @click="confirmingDelete = false">Cancel</button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
                 </div>
             </div>
             <draggable
@@ -69,7 +89,7 @@
 </template>
 
 <script setup>
-import { ref, nextTick } from 'vue';
+import { ref, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import draggable from 'vuedraggable';
 import TaskCard from './TaskCard.vue';
 import { useBoardStore } from '../stores/board.js';
@@ -91,6 +111,22 @@ const editTitle = ref('');
 const renameInput = ref(null);
 const confirmingDelete = ref(false);
 const collapsed = ref(false);
+const menuOpen = ref(false);
+
+function closeMenuOnClickOutside(e) {
+    if (menuOpen.value && !e.target.closest('.list-menu-container')) {
+        menuOpen.value = false;
+        confirmingDelete.value = false;
+    }
+}
+
+onMounted(() => {
+    document.addEventListener('click', closeMenuOnClickOutside);
+});
+
+onBeforeUnmount(() => {
+    document.removeEventListener('click', closeMenuOnClickOutside);
+});
 
 async function startRename() {
     if (props.readonly) return;
@@ -119,10 +155,29 @@ function cancelRename() {
 
 async function submitDelete() {
     confirmingDelete.value = false;
+    menuOpen.value = false;
     try {
         await boardStore.deleteList(props.list.id);
     } catch (err) {
         console.error('Failed to delete list:', err);
+    }
+}
+
+async function handleDuplicate() {
+    menuOpen.value = false;
+    try {
+        await boardStore.duplicateList(props.list.id);
+    } catch (err) {
+        console.error('Failed to duplicate list:', err);
+    }
+}
+
+async function handleArchiveList() {
+    menuOpen.value = false;
+    try {
+        await boardStore.archiveList(props.list.id);
+    } catch (err) {
+        console.error('Failed to archive list:', err);
     }
 }
 

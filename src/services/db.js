@@ -119,6 +119,50 @@ export async function deleteList(listId) {
     if (error) throw error;
 }
 
+export async function duplicateListWithTasks(listId, newTitle, position) {
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    // Create the new list
+    const { data: newList, error: listError } = await supabase
+        .from('lists')
+        .insert({ user_id: user.id, title: newTitle, position })
+        .select()
+        .single();
+    if (listError) throw listError;
+
+    // Fetch tasks from the source list
+    const { data: sourceTasks, error: fetchError } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('list_id', listId)
+        .order('position');
+    if (fetchError) throw fetchError;
+
+    // Duplicate each task into the new list
+    if (sourceTasks.length > 0) {
+        const newTasks = sourceTasks.map((t) => ({
+            list_id: newList.id,
+            user_id: user.id,
+            title: t.title,
+            description: t.description || '',
+            completed: t.completed,
+            position: t.position,
+        }));
+
+        const { data: insertedTasks, error: tasksError } = await supabase
+            .from('tasks')
+            .insert(newTasks)
+            .select();
+        if (tasksError) throw tasksError;
+
+        return { list: newList, tasks: insertedTasks };
+    }
+
+    return { list: newList, tasks: [] };
+}
+
 export async function updateTheme(theme) {
     const {
         data: { user },
