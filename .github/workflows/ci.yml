@@ -51,4 +51,4 @@ jobs:
               run: npm run build
               env:
                   VITE_SUPABASE_URL: https://placeholder.supabase.co
-                  VITE_SUPABASE_ANON_KEY: placeholder-key-for-build-check
+                  VITE_SUPABASE_API_KEY: placeholder-key-for-build-check

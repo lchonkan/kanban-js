@@ -38,7 +38,7 @@ npm install
 
 # Configure environment (see Supabase Setup below)
 cp .env.example .env
-# Edit .env with your Supabase project URL and anon key
+# Edit .env with your Supabase project URL and publishable API key
 
 # Start development server
 npm run dev
@@ -104,10 +104,10 @@ cp .env.example .env
 Edit `.env`:
 ```
 VITE_SUPABASE_URL=https://your-project-id.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key-here
+VITE_SUPABASE_API_KEY=your-publishable-api-key-here
 ```
 
-> The anon key is safe to use client-side -- Row-Level Security ensures users can only access their own data.
+> The publishable API key is safe to use client-side -- Row-Level Security ensures users can only access their own data.
 
 ### Step 6: Verify
 
@@ -253,7 +253,7 @@ When a new user signs up, a database trigger:
 ### Data Protection
 
 - **Row-Level Security (RLS):** Every table has policies ensuring users can only access their own rows
-- **Anon key is safe client-side:** The Supabase anon key only grants access through RLS policies -- it cannot bypass them
+- **Publishable API key is safe client-side:** It only grants access through RLS policies -- it cannot bypass them
 - **XSS mitigated:** All user content is rendered via `textContent` and safe DOM APIs (no `innerHTML` with user data)
 
 ### Recommendations for Production
@@ -293,7 +293,7 @@ Triggers on push to `main`:
 
 **Required GitHub Secrets:**
 - `VITE_SUPABASE_URL` -- your Supabase project URL
-- `VITE_SUPABASE_ANON_KEY` -- your Supabase anon/public key
+- `VITE_SUPABASE_API_KEY` -- your Supabase publishable API key
 
 Set these in your repo: **Settings** > **Secrets and variables** > **Actions** > **New repository secret**.
 
