@@ -59,6 +59,19 @@
     --card-save-bg: hsla(220, 50%, 45%, 0.8);
     --card-save-hover-bg: hsla(220, 55%, 55%, 0.9);
     --card-list-label: hsla(220, 15%, 55%, 1);
+    --auth-bg: hsla(225, 20%, 8%, 1);
+    --auth-card-bg: hsla(225, 15%, 13%, 0.95);
+    --auth-input-bg: hsla(225, 20%, 18%, 0.9);
+    --auth-input-border: hsla(220, 30%, 30%, 0.4);
+    --auth-input-text: hsla(220, 15%, 90%, 1);
+    --auth-btn-bg: hsla(220, 50%, 45%, 0.9);
+    --auth-btn-hover-bg: hsla(220, 55%, 55%, 1);
+    --auth-link-color: hsla(220, 60%, 65%, 1);
+    --auth-error-color: hsla(0, 65%, 60%, 1);
+    --toast-error-bg: hsla(0, 55%, 25%, 0.95);
+    --toast-error-text: hsla(0, 100%, 90%, 1);
+    --toast-success-bg: hsla(140, 50%, 22%, 0.95);
+    --toast-success-text: hsla(140, 100%, 90%, 1);
 }
 
 /* Light Theme */
@@ -115,6 +128,19 @@
     --card-save-bg: hsla(220, 55%, 50%, 0.85);
     --card-save-hover-bg: hsla(220, 60%, 40%, 0.95);
     --card-list-label: hsla(220, 15%, 50%, 1);
+    --auth-bg: hsla(220, 20%, 93%, 1);
+    --auth-card-bg: hsla(0, 0%, 100%, 0.97);
+    --auth-input-bg: hsla(0, 0%, 100%, 0.95);
+    --auth-input-border: hsla(220, 15%, 80%, 0.6);
+    --auth-input-text: hsla(225, 20%, 20%, 1);
+    --auth-btn-bg: hsla(220, 55%, 50%, 0.9);
+    --auth-btn-hover-bg: hsla(220, 60%, 40%, 1);
+    --auth-link-color: hsla(220, 55%, 45%, 1);
+    --auth-error-color: hsla(0, 65%, 50%, 1);
+    --toast-error-bg: hsla(0, 60%, 95%, 0.98);
+    --toast-error-text: hsla(0, 65%, 40%, 1);
+    --toast-success-bg: hsla(140, 50%, 93%, 0.98);
+    --toast-success-text: hsla(140, 50%, 30%, 1);
 }
 
 /* Awesome Theme — vibrant neon/synthwave */
@@ -171,6 +197,19 @@
     --card-save-bg: hsla(320, 70%, 45%, 0.8);
     --card-save-hover-bg: hsla(320, 80%, 55%, 0.9);
     --card-list-label: hsla(280, 40%, 55%, 1);
+    --auth-bg: hsla(270, 50%, 6%, 1);
+    --auth-card-bg: hsla(275, 40%, 10%, 0.97);
+    --auth-input-bg: hsla(270, 35%, 15%, 0.92);
+    --auth-input-border: hsla(320, 60%, 40%, 0.4);
+    --auth-input-text: hsla(195, 100%, 80%, 1);
+    --auth-btn-bg: hsla(320, 70%, 45%, 0.9);
+    --auth-btn-hover-bg: hsla(320, 80%, 55%, 1);
+    --auth-link-color: hsla(180, 100%, 55%, 1);
+    --auth-error-color: hsla(0, 80%, 65%, 1);
+    --toast-error-bg: hsla(0, 60%, 20%, 0.95);
+    --toast-error-text: hsla(0, 100%, 85%, 1);
+    --toast-success-bg: hsla(140, 55%, 18%, 0.95);
+    --toast-success-text: hsla(140, 100%, 85%, 1);
 }
 
 /* ══════════════════════════════════════════════════
@@ -188,11 +227,205 @@ body {
     font-family: 'Alata', sans-serif;
     padding: 0;
     margin: 0;
+    background-color: var(--auth-bg);
 }
 
 #app {
     height: 100%;
 }
+
+/* ══════════════════════════════════════════════════
+   AUTH PAGE
+   ══════════════════════════════════════════════════ */
+
+#auth-page {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background-color: var(--auth-bg);
+    overflow-y: auto;
+}
+
+#auth-page.visible {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fade-in 0.25s ease-out forwards;
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 380px;
+    padding: 20px;
+}
+
+.auth-brand {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 2rem;
+    color: var(--settings-heading);
+    text-align: center;
+    margin-bottom: 30px;
+    letter-spacing: 4px;
+}
+
+.auth-card {
+    background-color: var(--auth-card-bg);
+    border-radius: 12px;
+    padding: 28px 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.auth-card h2 {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.2rem;
+    color: var(--settings-heading);
+    margin: 0 0 20px 0;
+}
+
+#auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.auth-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.auth-field label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--settings-text);
+}
+
+.auth-field input {
+    font-family: sans-serif;
+    font-size: 0.9rem;
+    padding: 10px 12px;
+    border: 1px solid var(--auth-input-border);
+    border-radius: 8px;
+    background-color: var(--auth-input-bg);
+    color: var(--auth-input-text);
+    outline: none;
+    transition: border-color 0.15s ease;
+}
+
+.auth-field input:focus {
+    border-color: var(--inline-input-focus-border);
+}
+
+.auth-field input::placeholder {
+    opacity: 0.45;
+}
+
+.auth-error {
+    color: var(--auth-error-color);
+    font-size: 0.8rem;
+    font-family: sans-serif;
+    min-height: 1.2em;
+    margin: 0;
+}
+
+.auth-submit-btn {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.95rem;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--auth-btn-bg);
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    margin-top: 4px;
+}
+
+.auth-submit-btn:hover {
+    background-color: var(--auth-btn-hover-bg);
+}
+
+.auth-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.auth-toggle-text {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 0.8rem;
+    font-family: sans-serif;
+}
+
+.auth-toggle-text a {
+    color: var(--auth-link-color);
+    text-decoration: none;
+}
+
+.auth-toggle-text a:hover {
+    text-decoration: underline;
+}
+
+/* ══════════════════════════════════════════════════
+   LOADING SPINNER
+   ══════════════════════════════════════════════════ */
+
+#loading-spinner {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 150;
+    background-color: var(--board-bg);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+}
+
+#loading-spinner.visible {
+    display: flex;
+}
+
+.spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--task-border);
+    border-top-color: var(--auth-btn-bg);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spinner-text {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.9rem;
+    color: var(--settings-text);
+    margin: 0;
+}
+
+/* ══════════════════════════════════════════════════
+   BOARD PAGE
+   ══════════════════════════════════════════════════ */
+
+#board-page {
+    display: none;
+    flex-direction: column;
+    height: 100%;
+}
+
+#board-page.visible {
+    display: flex;
+}
+
+/* ══════════════════════════════════════════════════
+   NAVIGATION
+   ══════════════════════════════════════════════════ */
 
 .nav-bar {
     display: flex;
@@ -234,6 +467,22 @@ body {
     background-color: rgba(128, 128, 128, 0.25);
 }
 
+.nav-sign-out-btn {
+    background: none;
+    border: 1px solid rgba(128, 128, 128, 0.3);
+    color: var(--nav-text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 6px;
+    transition: background-color 0.15s ease;
+}
+
+.nav-sign-out-btn:hover {
+    background-color: rgba(128, 128, 128, 0.25);
+}
+
 /* ── Settings Page ── */
 
 #settings-page {
@@ -251,8 +500,12 @@ body {
 }
 
 @keyframes fade-in {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 .settings-container {
@@ -312,7 +565,9 @@ body {
     border: 2px solid var(--settings-option-border);
     background-color: var(--settings-option-bg);
     cursor: pointer;
-    transition: background-color 0.15s ease, border-color 0.2s ease;
+    transition:
+        background-color 0.15s ease,
+        border-color 0.2s ease;
 }
 
 .theme-option:hover {
@@ -339,7 +594,12 @@ body {
 }
 
 .theme-option-swatch.swatch-awesome {
-    background: linear-gradient(135deg, hsl(280, 80%, 15%), hsl(320, 100%, 50%), hsl(55, 100%, 60%));
+    background: linear-gradient(
+        135deg,
+        hsl(280, 80%, 15%),
+        hsl(320, 100%, 50%),
+        hsl(55, 100%, 60%)
+    );
 }
 
 .theme-option-info {
@@ -442,9 +702,15 @@ body {
 }
 
 @keyframes list-preview-pulse {
-    0%   { opacity: 0.25; }
-    50%  { opacity: 0.65; }
-    100% { opacity: 0.25; }
+    0% {
+        opacity: 0.25;
+    }
+    50% {
+        opacity: 0.65;
+    }
+    100% {
+        opacity: 0.25;
+    }
 }
 
 /* Task drag-and-drop styles */
@@ -460,9 +726,15 @@ body {
 }
 
 @keyframes task-preview-pulse {
-    0%   { opacity: 0.3; }
-    50%  { opacity: 0.75; }
-    100% { opacity: 0.3; }
+    0% {
+        opacity: 0.3;
+    }
+    50% {
+        opacity: 0.75;
+    }
+    100% {
+        opacity: 0.3;
+    }
 }
 
 /* Smooth transition for tasks shifting position */
@@ -478,6 +750,7 @@ body {
     font-family: 'Share Tech Mono', monospace;
     padding-left: 10px;
     font-size: 1.2rem;
+    text-shadow: 3px;
 }
 
 /* Persistent add-task row at the bottom of each list */
@@ -525,7 +798,9 @@ body {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    transition: background-color 0.15s ease, transform 0.1s ease;
+    transition:
+        background-color 0.15s ease,
+        transform 0.1s ease;
 }
 
 .add-task-btn:hover {
@@ -616,7 +891,9 @@ body {
     border-radius: 4px;
     flex-shrink: 0;
     opacity: 0;
-    transition: opacity 0.12s ease, color 0.12s ease;
+    transition:
+        opacity 0.12s ease,
+        color 0.12s ease;
     line-height: 1;
 }
 
@@ -634,8 +911,14 @@ body {
 }
 
 @keyframes task-pop-in {
-    0%   { opacity: 0; transform: scale(0.85) translateY(8px); }
-    100% { opacity: 1; transform: scale(1) translateY(0); }
+    0% {
+        opacity: 0;
+        transform: scale(0.85) translateY(8px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
 /* ── Task Card Modal ── */
@@ -644,8 +927,10 @@ body {
     display: none;
     position: fixed;
     z-index: 100;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
 }
 
 #task-card-modal.visible {
@@ -676,8 +961,14 @@ body {
 }
 
 @keyframes fade-slide-in {
-    0%   { opacity: 0; transform: translateY(-12px); }
-    100% { opacity: 1; transform: translateY(0); }
+    0% {
+        opacity: 0;
+        transform: translateY(-12px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .task-card-header {
@@ -780,10 +1071,6 @@ body {
     background-color: var(--card-save-hover-bg);
 }
 
-.tasklist-name {
-    text-shadow: 3px;
-}
-
 #backdrop {
     position: fixed;
     width: 100%;
@@ -801,45 +1088,47 @@ body {
     pointer-events: all;
 }
 
-form {
+/* ══════════════════════════════════════════════════
+   TOAST NOTIFICATIONS
+   ══════════════════════════════════════════════════ */
+
+#toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 300;
     display: flex;
-    flex-flow: column wrap;
-    justify-content: flex-start;
-    flex-direction: row;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
 }
 
-form fieldset {
-    display: flex;
-    padding-left: 10px;
-    color: var(--form-field-text);
-    border-width: 1px;
-    width: 100%;
-}
-
-fieldset legend {
-    color: var(--form-legend-color);
-    font-family: 'Share Tech Mono', monospace;
-    padding-left: 10px;
-    font-size: 1rem;
-}
-
-fieldset label {
-    display: flex;
-    justify-content: flex-end;
+.toast {
     font-family: sans-serif;
-    font-size: 0.9rem;
+    font-size: 0.82rem;
+    padding: 10px 16px;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    transform: translateY(8px);
+    transition:
+        opacity 0.25s ease,
+        transform 0.25s ease;
+    pointer-events: auto;
+    max-width: 340px;
 }
 
-label input {
-    margin-left: 10px;
-    align-self: flex-end;
-    width: 50%;
+.toast.toast-visible {
+    opacity: 1;
+    transform: translateY(0);
 }
 
-fieldset .buttons {
-    margin-right: 20px;
-    display: flex;
-    flex-direction: row-reverse;
+.toast-error {
+    background-color: var(--toast-error-bg);
+    color: var(--toast-error-text);
 }
 
-
+.toast-success {
+    background-color: var(--toast-success-bg);
+    color: var(--toast-success-text);
+}

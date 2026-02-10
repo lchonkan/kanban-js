@@ -1,309 +1,270 @@
 # KAN BAN JS
 
-A vanilla HTML, CSS, and JavaScript kanban board. Built as a learning project to practice ES6 classes, DOM manipulation, drag-and-drop events, and event-driven architecture -- no frameworks, no build tools, no backend.
+A vanilla HTML, CSS, and JavaScript kanban board with **Supabase** backend for authentication and data persistence. Each user gets a private, persisted board with drag-and-drop, color themes, and task editing -- no frameworks, just ES modules and Vite.
 
-> **Status:** Early prototype (v0.2.0). Core drag-and-drop, color themes, task editing, and mark-complete work; data persistence is on the roadmap.
+> **Status:** v0.2.0 -- Supabase auth (email+password), Row-Level Security, persistent board state, 3 color themes.
 
 ---
 
 ## Table of Contents
 
-1. [System Architecture](#1-system-architecture)
-2. [Database Schema (Roadmap)](#2-database-schema-roadmap)
-3. [API Specifications (Roadmap)](#3-api-specifications-roadmap)
-4. [Integration Requirements](#4-integration-requirements)
-5. [Data Synchronization](#5-data-synchronization)
-6. [Security and Compliance](#6-security-and-compliance)
-7. [Performance Requirements](#7-performance-requirements)
-8. [Monitoring and Logging](#8-monitoring-and-logging)
-9. [Testing Requirements](#9-testing-requirements)
-10. [Deployment and CI/CD](#10-deployment-and-cicd)
-11. [Edge Cases and Error Handling](#11-edge-cases-and-error-handling)
-12. [Future Considerations](#12-future-considerations)
-13. [AI Workflows](#13-ai-workflows)
+1. [Quick Start](#1-quick-start)
+2. [Supabase Setup](#2-supabase-setup)
+3. [System Architecture](#3-system-architecture)
+4. [Database Schema](#4-database-schema)
+5. [Security](#5-security)
+6. [Deployment](#6-deployment)
+7. [Performance](#7-performance)
+8. [Testing](#8-testing)
+9. [Future Considerations](#9-future-considerations)
+10. [AI Workflows](#10-ai-workflows)
 
 ---
 
-## 1. System Architecture
+## 1. Quick Start
+
+### Prerequisites
+
+- **Node.js** 18+ and **npm**
+- A **Supabase** project (free tier works fine) -- see [Supabase Setup](#2-supabase-setup)
+
+### Install and Run
+
+```bash
+# Clone and install
+git clone https://github.com/<your-username>/kanban-js.git
+cd kanban-js
+npm install
+
+# Configure environment (see Supabase Setup below)
+cp .env.example .env
+# Edit .env with your Supabase project URL and anon key
+
+# Start development server
+npm run dev
+```
+
+Vite will start a dev server at `http://localhost:5173` with hot module replacement.
+
+### Available Scripts
+
+| Script               | Description                              |
+| -------------------- | ---------------------------------------- |
+| `npm run dev`        | Start Vite dev server with HMR           |
+| `npm run build`      | Production build to `dist/`              |
+| `npm run preview`    | Preview the production build locally     |
+| `npm run lint`       | Check for lint errors (ESLint)           |
+| `npm run lint:fix`   | Auto-fix lint errors                     |
+| `npm run format`     | Format all files (Prettier)              |
+| `npm run format:check` | Verify formatting                      |
+| `npm run validate`   | Run both lint + format check             |
+
+---
+
+## 2. Supabase Setup
+
+### Step 1: Create a Supabase Project
+
+1. Go to [supabase.com](https://supabase.com) and create a free account
+2. Click **New Project** and choose a name, password, and region
+3. Wait for the project to finish provisioning
+
+### Step 2: Run the Database Migration
+
+1. In your Supabase dashboard, go to **SQL Editor** (left sidebar)
+2. Click **New query**
+3. Open the file `supabase/migration.sql` from this repo and paste its entire contents into the editor
+4. Click **Run** to execute the migration
+
+This creates:
+- `profiles` table -- stores per-user theme preference
+- `lists` table -- kanban columns with position ordering
+- `tasks` table -- task cards with title, description, completed status, and position
+- Row-Level Security (RLS) policies so each user can only see their own data
+- A database trigger that auto-creates a profile and 3 default lists (Pendientes, En Proceso, Finalizadas) when a new user signs up
+
+### Step 3: Configure Authentication
+
+1. In the Supabase dashboard, go to **Authentication** > **Providers**
+2. Ensure **Email** provider is enabled (it is by default)
+3. For local development, go to **Authentication** > **Settings** and disable **Confirm email** to skip email verification. Re-enable it for production.
+
+### Step 4: Get Your API Credentials
+
+1. In the Supabase dashboard, go to **Settings** > **API**
+2. Copy the **Project URL** (e.g., `https://abcdefg.supabase.co`)
+3. Copy the **anon / public** key (starts with `eyJ...`)
+
+### Step 5: Configure Environment Variables
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env`:
+```
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key-here
+```
+
+> The anon key is safe to use client-side -- Row-Level Security ensures users can only access their own data.
+
+### Step 6: Verify
+
+```bash
+npm run dev
+```
+
+1. Open `http://localhost:5173`
+2. Click "Don't have an account? Create one"
+3. Sign up with an email and password
+4. You should see 3 default lists with no tasks
+5. Add a task, refresh the page -- it persists!
+
+---
+
+## 3. System Architecture
 
 ### Class Hierarchy
 
 ```
 App (static entry point)
- ├── ThemeManager (static)   — color theme switching & localStorage persistence
- ├── TaskCardModal (static)  — edit task title & description
+ ├── AuthUI (static)        -- login/signup form handling
+ ├── ThemeManager (static)  -- color theme switching & persistence (Supabase + localStorage cache)
+ ├── TaskCardModal (static) -- edit task title & description
  └── Board
-      └── TaskList[]  (one per column: Pendientes, En Proceso, Finalizadas)
-           └── Task[]  (individual task items)
+      └── TaskList[]         (one per column, loaded from Supabase)
+           └── Task[]        (individual task items)
 ```
 
-| Class            | Responsibility                                                                                                        |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `App`            | Static `init()` entry point — creates the Board, initializes ThemeManager and TaskCardModal                           |
-| `ThemeManager`   | Applies color themes (`dark`, `light`, `awesome`) via `data-theme` attribute; persists selection in `localStorage`     |
-| `TaskCardModal`  | Singleton modal for editing a task's title and description; opened from the edit button on each task                   |
-| `Board`          | Renders the `<section id="board">` container; creates default TaskLists; manages drag-and-drop for tasks and lists    |
-| `TaskList`       | Renders a column, manages its `tasks[]` array, provides persistent inline input for adding tasks                      |
-| `Task`           | Data object holding `taskID`, `taskName`, `description`, `completed`, `parentListID`, `parentListName`                |
+| Class            | Responsibility                                                                                              |
+| ---------------- | ----------------------------------------------------------------------------------------------------------- |
+| `App`            | Entry point -- initializes UI, listens for auth state changes, loads/clears board                           |
+| `AuthUI`         | Handles login/signup form with client-side validation, toggles between sign-in and create-account modes     |
+| `ThemeManager`   | Applies themes (`dark`, `light`, `awesome`); persists to Supabase `profiles` table with localStorage cache |
+| `TaskCardModal`  | Modal for editing task title and description; saves changes to Supabase                                     |
+| `Board`          | Renders board, loads lists/tasks from Supabase, manages drag-and-drop with position persistence             |
+| `TaskList`       | Renders a column, manages its `tasks[]` array, creates new tasks via Supabase                               |
+| `Task`           | Data object: `id`, `title`, `description`, `completed`, `listId`, `position`                                |
 
 ### Data Flow
 
 ```
-User Action → DOM Event → Class Method → DOM Mutation
+User Action → DOM Event → Class Method → Supabase API Call → DOM Mutation
                                        ↘ Internal Array Update
 ```
 
-Drag-and-drop now preserves task objects (with description and completed state) when moving between lists.
+All mutations (create, update, reorder, complete) are persisted to Supabase in real-time. Errors are surfaced via toast notifications.
+
+### Module Map
+
+```
+kanban-js/
+├── index.html                 Vite entry point (auth page, board page, modals)
+├── src/
+│   ├── app.js                 Main application (classes + auth routing)
+│   ├── config.js              Supabase client initialization
+│   ├── auth.js                Auth helper functions (signUp, signIn, signOut)
+│   ├── db.js                  Data layer (fetchBoard, createTask, updateTask, etc.)
+│   └── toast.js               Toast notification system
+├── assets/
+│   └── css/app.css            All styles inc. 3 themes, auth page, toasts
+├── supabase/
+│   └── migration.sql          Database schema, RLS policies, seed trigger
+├── vite.config.js             Vite configuration
+├── .env.example               Environment variable template
+├── package.json               Dependencies and scripts
+├── .eslintrc.json             Linting config (ES modules)
+├── .prettierrc                Formatting config
+└── .github/
+    ├── workflows/
+    │   ├── ci.yml             Lint + format + build checks
+    │   └── deploy.yml         Vite build + GitHub Pages deploy
+    └── PULL_REQUEST_TEMPLATE.md
+```
 
 ### DOM Structure
 
 ```
 body
- ├── #backdrop                 (modal overlay)
- ├── #navigation > .nav-bar    (top bar with title + settings gear)
- ├── #settings-page            (full-screen theme settings overlay)
- ├── #task-card-modal          (task edit card with backdrop)
- │    └── .task-card            (title input, list label, description textarea, save)
- └── #app
-      └── #board.board
-           ├── .tasklist-wrapper (draggable)
-           │    └── .tasklist#list1 (Pendientes)
-           │         ├── .tasklist-header
-           │         ├── li.task (draggable)
-           │         │    └── .task-content
-           │         │         ├── .task-check  (✓ toggle)
-           │         │         ├── .task-title
-           │         │         └── .task-edit-btn (✎)
-           │         └── .add-task-row (input + button)
-           ├── .tasklist-wrapper > .tasklist#list2 (En Proceso)
-           └── .tasklist-wrapper > .tasklist#list3 (Finalizadas)
-```
-
-### File Map
-
-```
-kanban-js/
-├── index.html              Single-page shell (nav, settings page, task card modal)
-├── assets/
-│   ├── css/app.css         All styles inc. 3 color themes via CSS custom properties
-│   └── js/app.js           All logic (ThemeManager, TaskCardModal, Board, TaskList, Task)
-├── package.json            npm scripts + dev tooling
-├── .eslintrc.json          Linting config
-├── .prettierrc             Formatting config
-└── .github/
-    ├── workflows/
-    │   ├── ci.yml          Lint & format checks
-    │   └── deploy.yml      GitHub Pages deploy
-    └── PULL_REQUEST_TEMPLATE.md
+ ├── #auth-page                    (login/signup form, shown when signed out)
+ │    └── .auth-container
+ │         ├── .auth-brand         ("KAN BAN JS")
+ │         └── .auth-card          (email, password, submit, toggle link)
+ ├── #loading-spinner              (shown while fetching board data)
+ └── #board-page                   (shown when signed in)
+      ├── #navigation > .nav-bar   (title + settings gear + sign-out button)
+      ├── #settings-page           (full-screen theme settings overlay)
+      ├── #task-card-modal         (task edit card with backdrop)
+      └── #app
+           └── #board.board
+                ├── .tasklist-wrapper (draggable)
+                │    └── .tasklist    (column header + task items + add-task input)
+                │         ├── .tasklist-header
+                │         ├── li.task (draggable)
+                │         │    └── .task-content
+                │         │         ├── .task-check  (✓ toggle)
+                │         │         ├── .task-title
+                │         │         └── .task-edit-btn (✎)
+                │         └── .add-task-row (input + button)
+                └── ... (more lists)
 ```
 
 ---
 
-## 2. Database Schema (Roadmap)
+## 4. Database Schema
 
-No persistence layer exists yet. All data lives in memory and is lost on page reload.
+The database uses 3 tables with Row-Level Security. See `supabase/migration.sql` for the full schema.
 
-### Phase 1: localStorage
-
-```jsonc
-// Key: "kanban_board"
-{
-    "version": 1,
-    "lists": [
-        {
-            "id": "list1",
-            "name": "Pendientes",
-            "tasks": [
-                {
-                    "id": "list1-task1",
-                    "name": "defaultTask",
-                    "description": "",
-                    "createdAt": "2025-01-15T10:00:00Z",
-                },
-            ],
-        },
-    ],
-}
-```
-
-### Phase 2: Backend Database (future)
+### Tables
 
 ```sql
-CREATE TABLE lists (
-    id          UUID PRIMARY KEY,
-    name        VARCHAR(100) NOT NULL,
-    position    INTEGER NOT NULL,
-    created_at  TIMESTAMPTZ DEFAULT NOW()
-);
+-- User preferences (auto-created on signup via trigger)
+profiles (id UUID PK → auth.users, theme TEXT default 'dark')
 
-CREATE TABLE tasks (
-    id          UUID PRIMARY KEY,
-    list_id     UUID REFERENCES lists(id) ON DELETE CASCADE,
-    name        VARCHAR(255) NOT NULL,
-    description TEXT DEFAULT '',
-    position    INTEGER NOT NULL,
-    created_at  TIMESTAMPTZ DEFAULT NOW(),
-    updated_at  TIMESTAMPTZ DEFAULT NOW()
-);
+-- Kanban columns (3 default lists seeded on signup)
+lists (id UUID PK, user_id UUID FK, title TEXT, position INT)
+
+-- Task cards
+tasks (id UUID PK, list_id UUID FK, user_id UUID FK, title TEXT,
+       description TEXT, completed BOOL, position INT)
 ```
 
----
+### RLS Policies
 
-## 3. API Specifications (Roadmap)
+All tables have Row-Level Security enabled. Every policy is scoped to `auth.uid() = user_id` (or `auth.uid() = id` for profiles), ensuring users can only read and write their own data.
 
-No backend exists. The following REST endpoints are planned for a future version.
+### Auto-Seed Trigger
 
-### Planned Endpoints
-
-| Method   | Endpoint               | Description               | Request Body                                   | Response            |
-| -------- | ---------------------- | ------------------------- | ---------------------------------------------- | ------------------- |
-| `GET`    | `/api/board`           | Get full board state      | --                                             | `{ lists: List[] }` |
-| `POST`   | `/api/lists`           | Create a new list         | `{ name }`                                     | `List`              |
-| `PUT`    | `/api/lists/:id`       | Update list name/position | `{ name?, position? }`                         | `List`              |
-| `DELETE` | `/api/lists/:id`       | Delete a list             | --                                             | `204`               |
-| `POST`   | `/api/lists/:id/tasks` | Create a task in a list   | `{ name, description? }`                       | `Task`              |
-| `PUT`    | `/api/tasks/:id`       | Update a task             | `{ name?, description?, list_id?, position? }` | `Task`              |
-| `DELETE` | `/api/tasks/:id`       | Delete a task             | --                                             | `204`               |
-
-### Data Contracts
-
-```typescript
-interface List {
-    id: string;
-    name: string;
-    position: number;
-    tasks: Task[];
-}
-
-interface Task {
-    id: string;
-    name: string;
-    description: string;
-    listId: string;
-    position: number;
-    createdAt: string;
-    updatedAt: string;
-}
-```
+When a new user signs up, a database trigger:
+1. Creates a row in `profiles` with default theme `'dark'`
+2. Inserts 3 default lists: Pendientes (pos 0), En Proceso (pos 1), Finalizadas (pos 2)
 
 ---
 
-## 4. Integration Requirements
+## 5. Security
 
-### Current Integrations
+### Authentication
 
-| Integration                                | Type         | Purpose                       |
-| ------------------------------------------ | ------------ | ----------------------------- |
-| Google Fonts (Alata)                       | CDN `<link>` | Primary UI typeface           |
-| Google Fonts (Montserrat, Share Tech Mono) | CDN `<link>` | Headings and monospace labels |
+- Email + password authentication via Supabase Auth
+- Client-side validation: email format check, minimum 6-character password
+- Session managed by `@supabase/supabase-js` (stores JWT in localStorage)
 
-### Planned Integrations
+### Data Protection
 
-| Integration      | Phase | Purpose                            |
-| ---------------- | ----- | ---------------------------------- |
-| localStorage API | v0.2  | Persist board state across reloads |
-| Backend REST API | v1.0  | Multi-device sync, user accounts   |
-| Service Worker   | v1.0  | Offline support and caching        |
+- **Row-Level Security (RLS):** Every table has policies ensuring users can only access their own rows
+- **Anon key is safe client-side:** The Supabase anon key only grants access through RLS policies -- it cannot bypass them
+- **XSS mitigated:** All user content is rendered via `textContent` and safe DOM APIs (no `innerHTML` with user data)
 
----
+### Recommendations for Production
 
-## 5. Data Synchronization
-
-### Current State
-
-There is no data synchronization. The board is initialized from hardcoded defaults on every page load. DOM mutations from drag-and-drop are visual only and do not update the internal `tasks[]` arrays.
-
-### Planned Sync Strategy
-
-| Phase | Strategy           | Details                                                                     |
-| ----- | ------------------ | --------------------------------------------------------------------------- |
-| v0.2  | **localStorage**   | Save on every mutation; load on `DOMContentLoaded`; debounce writes (300ms) |
-| v0.3  | **REST API**       | Optimistic UI updates; queue failed requests for retry                      |
-| v1.0  | **Multi-tab sync** | `BroadcastChannel` or `storage` event listener to sync across tabs          |
+- Enable **Confirm email** in Supabase Auth settings
+- Add a Content Security Policy (CSP) header
+- Consider rate limiting on the auth endpoints
 
 ---
 
-## 6. Security and Compliance
-
-### XSS Analysis
-
-| Location                         | Risk       | Detail                                                                                                                                                                           |
-| -------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `TaskList` constructor (line 24) | **Medium** | Uses template literal in `innerHTML` -- `listName` comes from the hardcoded `DEFAULT_LISTS` array, so currently safe, but would be vulnerable if list names become user-editable |
-| `addTaskBtnHandler` (line 117)   | **Low**    | Modal HTML is a static template; user input is read via `.value` and set via `textContent` (safe)                                                                                |
-| `Task` constructor               | **Low**    | Reads `innerHTML` of `.tasklist-name` to set `parentListName` — currently only used for display in the card modal                                                                |
-
-### Recommendations
-
-- Replace `innerHTML` with `textContent` or DOM APIs where possible
-- Sanitize any user-supplied values before inserting into the DOM
-- Add a Content Security Policy (CSP) header:
-    ```
-    Content-Security-Policy: default-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com;
-    ```
-
----
-
-## 7. Performance Requirements
-
-### Current Profile
-
-| Metric             | Value                                    |
-| ------------------ | ---------------------------------------- |
-| Total payload      | ~12 KB (HTML + CSS + JS, uncompressed)   |
-| External resources | 3 Google Fonts requests                  |
-| JavaScript         | Single ~500-line file, no bundling needed |
-
-### Targets
-
-| Metric                   | Target        | Notes                                         |
-| ------------------------ | ------------- | --------------------------------------------- |
-| First Contentful Paint   | < 500ms       | Already fast given the tiny payload           |
-| Drag-and-drop frame rate | 60 fps        | Currently met -- no heavy reflows during drag |
-| Task count support       | 100+ per list | May need virtual scrolling above ~200 tasks   |
-
----
-
-## 8. Monitoring and Logging
-
-### Current State
-
-The codebase uses `console.log` / `console.info` extensively for debug output during development. There is no structured logging or error tracking.
-
-### Recommendations
-
-| Concern                | Recommendation                                                          |
-| ---------------------- | ----------------------------------------------------------------------- |
-| Debug logging          | Wrap in a `DEBUG` flag: `const DEBUG = false;` and guard logs behind it |
-| Error tracking         | Add a global `window.onerror` handler; consider Sentry for production   |
-| Performance monitoring | Use `Performance.mark()` / `Performance.measure()` for key operations   |
-| User analytics         | Defer until a backend exists; keep it privacy-respecting                |
-
----
-
-## 9. Testing Requirements
-
-### Planned Strategy
-
-No tests exist yet. The planned approach:
-
-| Layer       | Tool           | Scope                                                              |
-| ----------- | -------------- | ------------------------------------------------------------------ |
-| Unit        | Vitest + jsdom | Class methods (`addTask`, `removeTask`, array management)          |
-| Integration | Vitest + jsdom | Board initialization, modal open/close, DOM structure              |
-| E2E         | Playwright     | Full drag-and-drop flow, task creation, cross-browser verification |
-
-### Recommended First Tests
-
-1. `Board` creates the correct number of `TaskList` instances
-2. `TaskList.addTask()` appends a `<li>` to the DOM and updates `tasks[]`
-3. `TaskList.removeTask()` removes the element and filters `tasks[]`
-4. Drag-and-drop moves a task element between lists
-5. "Add Task" modal validates non-empty input
-
----
-
-## 10. Deployment and CI/CD
+## 6. Deployment
 
 ### Git Flow Branching
 
@@ -315,97 +276,96 @@ develop ← integration branch, receives feature PRs
 feature/* ← individual feature/fix branches (branch from develop)
 ```
 
-**Workflow:**
-
-1. Create `feature/*` branch from `develop`
-2. Open PR to `develop` -- CI runs lint + format checks
-3. Merge to `develop` after review
-4. When ready to release, merge `develop` → `main`
-5. `main` push triggers GitHub Pages deploy
-
 ### CI Pipeline (`.github/workflows/ci.yml`)
 
 Triggers on push/PR to `develop` and `main`:
 
-1. Checkout code
-2. Setup Node.js 20
-3. `npm ci`
-4. `npm run lint` (ESLint)
-5. `npm run format:check` (Prettier)
+1. **Lint & Format Check:** ESLint + Prettier
+2. **Build Check:** `vite build` with placeholder env vars to verify compilation
 
 ### Deploy Pipeline (`.github/workflows/deploy.yml`)
 
 Triggers on push to `main`:
 
-1. Checkout code
-2. Upload repo as GitHub Pages artifact
+1. `npm ci` + `npm run build` (with Supabase secrets from GitHub repo settings)
+2. Upload `dist/` as GitHub Pages artifact
 3. Deploy via `actions/deploy-pages@v4`
 
-### Local Development
+**Required GitHub Secrets:**
+- `VITE_SUPABASE_URL` -- your Supabase project URL
+- `VITE_SUPABASE_ANON_KEY` -- your Supabase anon/public key
 
-```bash
-# Clone and install
-git clone https://github.com/<your-username>/kanban-js.git
-cd kanban-js
-npm install
-
-# Open in browser (no build step needed)
-open index.html
-
-# Run linting and formatting
-npm run lint          # Check for lint errors
-npm run lint:fix      # Auto-fix lint errors
-npm run format        # Format all files
-npm run format:check  # Verify formatting
-npm run validate      # Run both lint + format check
-```
+Set these in your repo: **Settings** > **Secrets and variables** > **Actions** > **New repository secret**.
 
 ---
 
-## 11. Edge Cases and Error Handling
+## 7. Performance
 
-### Known Issues
+### Current Profile
 
-| Issue                   | Location                        | Description                                                                                          |
-| ----------------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `Math.random()` IDs     | `submitNewTask`                | Task IDs generated with `Math.random().toString()` risk collisions and produce non-semantic IDs      |
-| `innerHTML` in template | `TaskList` constructor          | Uses template literal in `innerHTML` — `listName` comes from hardcoded defaults, but would be vulnerable if user-editable |
+| Metric             | Value                                          |
+| ------------------ | ---------------------------------------------- |
+| Total payload      | ~185 KB bundled (JS), ~21 KB CSS (production)  |
+| External resources | 3 Google Fonts requests, Supabase API calls    |
+| Build tool         | Vite (ES modules, tree-shaking)                |
 
-### Error Handling (Current)
+### Targets
 
-There is no try/catch or error boundary. The only validation is a non-empty check on the task name input with a browser `alert()`.
+| Metric                   | Target    | Notes                                          |
+| ------------------------ | --------- | ---------------------------------------------- |
+| First Contentful Paint   | < 800ms   | Theme loads from localStorage cache instantly   |
+| Drag-and-drop frame rate | 60 fps    | No heavy reflows during drag                   |
+| Task count support       | 100+ per list | May need virtual scrolling above ~200 tasks |
 
 ---
 
-## 12. Future Considerations
+## 8. Testing
+
+### Planned Strategy
+
+| Layer       | Tool           | Scope                                                              |
+| ----------- | -------------- | ------------------------------------------------------------------ |
+| Unit        | Vitest + jsdom | Class methods, data layer functions                                |
+| Integration | Vitest + jsdom | Board loading, modal interactions, auth flow                       |
+| E2E         | Playwright     | Full sign-up flow, task CRUD, drag-and-drop, multi-user isolation  |
+
+### Verification Checklist
+
+- [ ] Create a new account -> see 3 default lists, no tasks
+- [ ] Add tasks, edit title/description, mark complete -> refresh -> all state persists
+- [ ] Sign out -> sign in with a different account -> see a separate empty board
+- [ ] Switch theme -> refresh -> theme persists
+- [ ] Drag tasks between lists and reorder lists -> refresh -> order persists
+- [ ] Supabase RLS prevents seeing other users' data via direct API calls
+
+---
+
+## 9. Future Considerations
 
 ### Short-term (v0.3)
 
-- [ ] Add localStorage persistence for board state
-- [ ] Replace `Math.random()` IDs with `crypto.randomUUID()`
-- [ ] Task deletion (from card modal or inline)
-- [ ] Clean up `console.log` statements
-- [ ] Replace `innerHTML` with `textContent` / DOM APIs where possible
+- [ ] Task deletion from the card modal
+- [ ] Custom list creation / renaming / deletion
+- [ ] Responsive design for mobile
+- [ ] Clean up debug `console.log` statements
 
 ### Medium-term (v0.4)
 
-- [ ] Custom list creation / renaming / deletion
-- [ ] Responsive design for mobile
+- [ ] Optimistic UI updates for snappier feel
 - [ ] Unit and integration tests (Vitest)
 - [ ] Keyboard accessibility for drag-and-drop
+- [ ] Real-time sync via Supabase Realtime (multi-tab / multi-device)
 
 ### Long-term (v1.0)
 
-- [ ] Backend API with user authentication
-- [ ] Multi-device sync
-- [ ] Offline support (Service Worker)
 - [ ] Task labels, due dates, and priorities
+- [ ] Offline support (Service Worker + local queue)
 - [ ] E2E tests (Playwright)
-- [ ] Accessibility audit (keyboard navigation, ARIA roles, screen reader support)
+- [ ] Accessibility audit (ARIA roles, screen reader support)
 
 ---
 
-## 13. AI Workflows
+## 10. AI Workflows
 
 ### Development Assistance
 
@@ -413,21 +373,6 @@ There is no try/catch or error boundary. The only validation is a non-empty chec
 | ------------------ | ------------------------------------------------------------------------------------------------------- |
 | **Claude Code**    | Architecture decisions, code review, refactoring guidance, documentation generation, debugging sessions |
 | **GitHub Copilot** | Inline code completion, boilerplate generation, test scaffolding                                        |
-
-**Suggested prompts for Claude Code:**
-
-- "Review `connectDroppable()` and suggest how to keep `tasks[]` in sync with DOM moves"
-- "Refactor the modal logic into a reusable Modal class"
-- "Write Vitest unit tests for the TaskList class"
-
-### In-App AI Features (Future)
-
-| Feature              | Description                                                                 | Phase |
-| -------------------- | --------------------------------------------------------------------------- | ----- |
-| Smart categorization | Auto-suggest which list a new task belongs in based on keywords             | v1.0  |
-| NLP task creation    | Create tasks from natural language ("Schedule meeting with team on Friday") | v1.0  |
-| Task summarization   | Summarize all tasks in a list for standup reports                           | v1.0  |
-| Priority suggestions | Suggest task priority based on due dates and dependencies                   | v1.0  |
 
 ---
 
